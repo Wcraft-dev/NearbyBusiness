@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import AuthContext, { AuthRoles } from "../context/auth/AuthContext";
 import Home from "../screen/Home";
+import Dashboard from "../screen/dashboard/Index";
 import NotFound from "../screen/NotFound";
 import auth from "./auth";
 
@@ -18,7 +19,7 @@ const routes = [
   ...auth,
   {
     path: "/dashboard",
-    component: ProtectedPage,
+    component: Dashboard,
     permission: AuthRoles.EMPRESARIO,
   },
   {
