@@ -4,35 +4,79 @@ import {
   Switch,
   Route,
   Redirect,
+  NavLink,
 } from "react-router-dom";
-import AuthContext, { AuthRoles } from "../context/auth/AuthContext";
-import Home from "../screen/Home";
-import Dashboard from "../screen/dashboard/Index";
+import { Button } from "@material-ui/core";
+import AuthContext from "../context/auth/AuthContext";
 import NotFound from "../screen/NotFound";
-import auth from "./auth";
+import Header from "../component/Header";
+import routes from "./routes";
 
-const routes = [
-  {
-    path: "/",
-    component: Home,
-  },
-  ...auth,
-  {
-    path: "/dashboard",
-    component: Dashboard,
-    permission: AuthRoles.EMPRESARIO,
-  },
-  {
-    path: "/productos",
-    component: ProtectedPage,
-    permission: AuthRoles.NORMAL,
-  },
-];
 export default function Routes() {
+  const { userToken, homePath } = useContext(AuthContext);
   return (
     <Router>
-      {/*Header*/}
-
+      <Header>
+        {userToken !== null ? (
+          <Button
+            color="inherit"
+            component={NavLink}
+            exact
+            to={homePath}
+            activeStyle={{
+              fontWeight: "bold",
+              color: "red",
+            }}
+          >
+            Inicio
+          </Button>
+        ) : (
+          ""
+        )}
+        {routes.map((route, i) => {
+          return (
+            <div key={i}>
+              {route.show ? (
+                userToken === null ? (
+                  <Button
+                    color="inherit"
+                    component={NavLink}
+                    exact
+                    to={route.path}
+                    activeStyle={{
+                      fontWeight: "bold",
+                      color: "red",
+                    }}
+                  >
+                    {route.displayName}
+                  </Button>
+                ) : (
+                  ""
+                )
+              ) : userToken !== null ? (
+                !route.shadow ? (
+                  <Button
+                    color="inherit"
+                    component={NavLink}
+                    exact
+                    to={route.path}
+                    activeStyle={{
+                      fontWeight: "bold",
+                      color: "red",
+                    }}
+                  >
+                    {route.displayName}
+                  </Button>
+                ) : (
+                  ""
+                )
+              ) : (
+                ""
+              )}
+            </div>
+          );
+        })}
+      </Header>
       <Switch>
         {routes.map((route, i) => {
           return <PrivateRoute path={route.path} route={route} key={i} exact />;
@@ -43,10 +87,6 @@ export default function Routes() {
       </Switch>
     </Router>
   );
-}
-
-function ProtectedPage() {
-  return <h3>Protected</h3>;
 }
 
 function PrivateRoute({ children, route, ...rest }) {

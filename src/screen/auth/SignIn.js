@@ -2,7 +2,6 @@ import React, { useContext, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { Grid, Typography, Button } from "@material-ui/core";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import AuthContext from "../../context/auth/AuthContext";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -43,13 +42,13 @@ function SignIn() {
       );
     }
   };
-  const { signIn, userToken, googleSingIn } = useContext(AuthContext);
+  const { signIn, userToken, homePath, googleSingIn } = useContext(AuthContext);
 
   useEffect(() => {
     if (userToken !== null) {
-      history.push("/dashboard");
+      history.push(homePath);
     }
-  }, [userToken]);
+  }, [userToken, homePath]);
   return (
     <Grid container>
       <Typography>{userToken}</Typography>
@@ -73,8 +72,6 @@ function SignIn() {
         >
           Inicio de sesion con Google
         </Button>
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/productos">productos</Link>
       </Grid>
     </Grid>
   );

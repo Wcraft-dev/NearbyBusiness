@@ -3,12 +3,13 @@ import AuthContext, { AuthReducer, AuthRoles } from "./AuthContext";
 import { auth, db } from "../../firebase";
 import firebase from "firebase/app";
 import { toast } from "react-toastify";
-import { AUTH } from "../types";
+import { AUTH, SIGN_OUT } from "../types";
 
 const AuthState = (props) => {
   const initialState = {
     userToken: null,
     role: null,
+    homePath: null,
   };
   const [state, dispatch] = useReducer(AuthReducer, initialState);
 
@@ -39,12 +40,13 @@ const AuthState = (props) => {
       case "auth/user-not-found":
         toast("Coreo o contraseña equivocados", { type: "error" });
         break;
+      case "permission-denied":
+        break;
       default:
         console.log(e.message, e.code);
         break;
     }
   };
-
 
   const signIn = async (data) => {
     try {
@@ -55,6 +57,7 @@ const AuthState = (props) => {
       validErrorsFB(e);
     }
   };
+
   const googleSingIn = async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
@@ -95,6 +98,7 @@ const AuthState = (props) => {
   };
   const signOut = async () => {
     try {
+      dispatch({ type: SIGN_OUT, payload: initialState });
       auth.signOut();
     } catch (e) {
       validErrorsFB(e);
@@ -110,7 +114,13 @@ const AuthState = (props) => {
   };
   const dataUser = async (id) => {
     const res = await db.collection("users").doc(id).get();
-    const data = { ...res.data(), token: id };
+    let homePath = null;
+    if (res.data().type === AuthRoles.EMPRESARIO) {
+      homePath = AuthRoles.EMPRESARIO_PATH;
+    } else if (res.data().type === AuthRoles.NORMAL) {
+      homePath = AuthRoles.NORMAL_PATH;
+    }
+    const data = { ...res.data(), token: id, homePath };
     dispatch({ type: AUTH, payload: data });
   };
   const authListener = async () => {
@@ -130,6 +140,7 @@ const AuthState = (props) => {
       value={{
         userToken: state.userToken,
         role: state.role,
+        homePath: state.homePath,
         signIn,
         signUp,
         signOut,
