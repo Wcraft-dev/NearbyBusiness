@@ -7,6 +7,7 @@ import NumberFormat from "react-number-format";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import AuthContext from "../context/auth/AuthContext";
+import firebase from "firebase";
 
 const schema = yup.object().shape({
   nameProduct: yup
@@ -86,8 +87,8 @@ const FormBusinessmen = (props) => {
         descriptionProduct: data.descriptionProduct,
         nameProduct: data.nameProduct,
         creator: userToken,
-        createdOn: new Date(),
-        updateOn: new Date(),
+        createdOn: new Date("2020-12-17T03:24:00"),
+        updateOn: firebase.firestore.FieldValue.serverTimestamp(),
       };
       await db.collection("products").doc().set(king);
       toast("Producto guardado exitosamente", { type: "success" });

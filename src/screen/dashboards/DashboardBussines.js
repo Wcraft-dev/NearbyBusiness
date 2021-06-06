@@ -15,11 +15,14 @@ import { toast } from "react-toastify";
 import { Create, Close } from "@material-ui/icons/";
 import FormBusinessmen from "../../component/FormBusinessmen";
 import AuthContext from "../../context/auth/AuthContext";
+import TimeAgo from "react-timeago";
+import espanishStrings from "react-timeago/lib/language-strings/es";
+import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 
 function Index() {
   const [products, setProducts] = useState([]);
   const [currentId, setCurrentId] = useState("");
-
+  const formatter = buildFormatter(espanishStrings);
   const { userToken } = useContext(AuthContext);
 
   const getProduct = async () => {
@@ -71,13 +74,19 @@ function Index() {
                 <CardContent>
                   <Typography> {obj.descriptionProduct}</Typography>
                   <Typography> {obj.amount}</Typography>
+                  <Typography>
+                    <TimeAgo
+                      date={obj.createdOn.toDate()}
+                      formatter={formatter}
+                    />
+                  </Typography>
                 </CardContent>
                 <CardActions>
                   <Button
                     variant="contained"
                     color="primary"
                     size="small"
-                    startIcon={<Create>send</Create>}
+                    startIcon={<Create />}
                     onClick={() => setCurrentId(obj.id)}
                   >
                     Editar
