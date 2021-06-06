@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   Button,
   Container,
@@ -14,16 +14,22 @@ import { db } from "../../firebase";
 import { toast } from "react-toastify";
 import { Create, Close } from "@material-ui/icons/";
 import FormBusinessmen from "../../component/FormBusinessmen";
+import AuthContext from "../../context/auth/AuthContext";
 
 function Index() {
   const [products, setProducts] = useState([]);
   const [currentId, setCurrentId] = useState("");
 
+  const { userToken } = useContext(AuthContext);
+
   const getProduct = async () => {
     db.collection("products").onSnapshot((querySnapshot) => {
       const docs = [];
       querySnapshot.forEach((doc) => {
-        docs.push({ ...doc.data(), id: doc.id });
+        const d = doc.data();
+        if (d.creator === userToken) {
+          docs.push({ ...d, id: doc.id });
+        }
       });
       setProducts(docs);
     });

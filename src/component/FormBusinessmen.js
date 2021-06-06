@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { TextField, Button } from "@material-ui/core";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
@@ -6,6 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import NumberFormat from "react-number-format";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import AuthContext from "../context/auth/AuthContext";
 
 const schema = yup.object().shape({
   nameProduct: yup
@@ -31,6 +32,9 @@ const FormBusinessmen = (props) => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  const { userToken } = useContext(AuthContext);
+
   const getProductById = async (id) => {
     const doc = await db.collection("products").doc(id).get();
     const docs = doc.data();
@@ -77,7 +81,15 @@ const FormBusinessmen = (props) => {
       resetForm();
       props.ok();
     } else {
-      await db.collection("products").doc().set(data);
+      const king = {
+        amount: data.amount,
+        descriptionProduct: data.descriptionProduct,
+        nameProduct: data.nameProduct,
+        creator: userToken,
+        createdOn: new Date(),
+        updateOn: new Date(),
+      };
+      await db.collection("products").doc().set(king);
       toast("Producto guardado exitosamente", { type: "success" });
       resetForm();
     }
