@@ -1,8 +1,8 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth";
 
-// Your web app's Firebase configuration
-var firebaseConfig = {
+const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_KEY,
   authDomain: "nerby-business.firebaseapp.com",
   projectId: "nerby-business",
@@ -10,6 +10,7 @@ var firebaseConfig = {
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
-// Initialize Firebase
+
 const fb = firebase.initializeApp(firebaseConfig);
 export const db = fb.firestore();
+export const auth = fb.auth();

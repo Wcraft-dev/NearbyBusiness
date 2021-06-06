@@ -1,25 +1,9 @@
-import React, { useReducer } from "react";
-import AuthContext, { AuthReducer } from "./AuthContext";
+import React, { useReducer, useEffect } from "react";
+import AuthContext, { AuthReducer, AuthRoles } from "./AuthContext";
+import { auth, db } from "../../firebase";
+import firebase from "firebase/app";
+import { toast } from "react-toastify";
 import { AUTH } from "../types";
-
-//Fake Auth
-async function connectToServer(data) {
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-  await timeout(3000);
-
-  if (data.email === "example@hola.com") {
-    if (data.password === "Hola123") {
-      return {
-        token: "MITOKEN",
-        role: "EMPRESARIO",
-        data: { name: "NAME", displayName: "NAMEDISPLAY", picture: "http" },
-      };
-    }
-  }
-  return { error: "user not found" };
-}
 
 const AuthState = (props) => {
   const initialState = {
@@ -28,34 +12,92 @@ const AuthState = (props) => {
   };
   const [state, dispatch] = useReducer(AuthReducer, initialState);
 
-  const singIn = async (data) => {
-    try {
-      const resolve = await connectToServer(data);
-      console.log(resolve);
-      if (resolve.token) {
-        dispatch({ type: AUTH, payload: resolve });
-        return true;
-      } else {
-        throw resolve;
-      }
-    } catch (e) {
-      console.log(e);
-      return false;
+  const validErrorsFB = (e) => {
+    switch (e.code) {
+      case "auth/email-already-in-use":
+        toast("Correo ya usado", { type: "error" });
+        break;
+      case "auth/weak-password":
+        toast("Contraseña muy debil", { type: "error" });
+        break;
+      case "auth/popup-closed-by-user":
+        toast("Se ha cerrado la pagina, por favor vulve a intetar", {
+          type: "error",
+        });
+        break;
+      case "auth/invalid-email":
+        toast("Correo no valido", { type: "error" });
+        break;
+      case "auth/wrong-password":
+        toast("Coreo o contraseña equivocados", { type: "error" });
+        break;
+      case "auth/user-disable":
+        toast("Se desactivado tu cuenta, consulta servicio al cliente", {
+          type: "error",
+        });
+        break;
+      case "auth/user-not-found":
+        toast("Coreo o contraseña equivocados", { type: "error" });
+        break;
+      default:
+        console.log(e.message, e.code);
+        break;
     }
   };
-  const singUp = async (data) => {
+
+
+  const signIn = async (data) => {
     try {
-      const resolve = await connectToServer(data);
-      console.log(resolve);
-      if (resolve.token) {
-        dispatch({ type: AUTH, payload: resolve });
-        return true;
-      } else {
-        throw resolve;
-      }
+      await auth.signInWithEmailAndPassword(data.email, data.password);
+      toast("Ingresaste con extio");
+      return true;
     } catch (e) {
-      console.log(e);
-      return false;
+      validErrorsFB(e);
+    }
+  };
+  const googleSingIn = async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const res = await auth.signInWithPopup(provider);
+      if (res.credential) {
+        await db.collection("users").doc(res.user.uid).set({
+          name: res.user.displayName,
+          email: res.user.email,
+          photo: res.user.photoURL,
+          type: AuthRoles.NORMAL,
+          firstLogin: true,
+        });
+      }
+      toast("Ingresaste con extio");
+    } catch (e) {
+      validErrorsFB(e);
+    }
+  };
+  const signUp = async (data) => {
+    try {
+      const res = await auth.createUserWithEmailAndPassword(
+        data.email,
+        data.password
+      );
+      await db.collection("users").doc(res.user.uid).set({
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        business: data.business,
+        type: data.type,
+        firstLogin: true,
+      });
+      toast("Registrado con exito");
+      return true;
+    } catch (e) {
+      validErrorsFB(e);
+    }
+  };
+  const signOut = async () => {
+    try {
+      auth.signOut();
+    } catch (e) {
+      validErrorsFB(e);
     }
   };
   const accessRoute = (route) => {
@@ -66,14 +108,32 @@ const AuthState = (props) => {
       return false;
     }
   };
+  const dataUser = async (id) => {
+    const res = await db.collection("users").doc(id).get();
+    const data = { ...res.data(), token: id };
+    dispatch({ type: AUTH, payload: data });
+  };
+  const authListener = async () => {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        dataUser(user.uid);
+      }
+    });
+  };
+
+  useEffect(() => {
+    authListener();
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         userToken: state.userToken,
         role: state.role,
-        singIn,
-        singUp,
+        signIn,
+        signUp,
+        signOut,
+        googleSingIn,
         accessRoute,
       }}
     >

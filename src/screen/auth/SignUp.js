@@ -1,9 +1,11 @@
 import React, { useContext } from "react";
 import { Grid, Typography } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
-import AuthContext from "../../context/auth/AuthContext";
+import AuthContext, { AuthRoles } from "../../context/auth/AuthContext";
 import { yupResolver } from "@hookform/resolvers/yup";
+
 import * as yup from "yup";
 
 const schema = yup.object().shape({
@@ -32,22 +34,45 @@ const schema = yup.object().shape({
     .string()
     .oneOf([yup.ref("password"), null], "passwords must match")
     .required(),
+  type: yup.string().required(),
+  business: yup.string().required().max(30),
 });
 
 function SignIn() {
   const {
     register,
+    watch,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const { singUp } = useContext(AuthContext);
-
+  let history = useHistory();
+  const { signUp } = useContext(AuthContext);
+  const watchType = watch("type");
   const onSubmit = async (data) => {
-    console.log("envio");
-    const respuesta = await singUp(data);
-    console.log(respuesta);
+    const res = await signUp(data);
+    if (res) {
+      history.push("/login")
+      reset(
+        {
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          passwordConfirmation: "",
+        },
+        {
+          keepErrors: true,
+          keepDirty: true,
+          keepIsSubmitted: false,
+          keepTouched: false,
+          keepIsValid: false,
+          keepSubmitCount: false,
+        }
+      );
+    }
   };
 
   return (
@@ -55,29 +80,46 @@ function SignIn() {
       <Grid item xs={12}></Grid>
       <Grid item xs={12}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <input {...register("firstName")} />
+          <input {...register("firstName")} placeholder="Name" />
+          <Typography color="secondary" component="span">
+            {errors.firstName?.message}
+          </Typography>
+          <input {...register("lastName")} placeholder="Last Name" />
+          <Typography color="secondary" component="span">
+            {errors.lastName?.message}
+          </Typography>
+          <input {...register("email")} placeholder="email" />
           <Typography color="secondary" component="span">
             {errors.email?.message}
           </Typography>
-          <input {...register("lastName")} />
+          <input {...register("password")} placeholder="password" />
           <Typography color="secondary" component="span">
             {errors.password?.message}
           </Typography>
-          <input {...register("email")} />
+          <input
+            {...register("passwordConfirmation")}
+            placeholder="password Confirm"
+          />
           <Typography color="secondary" component="span">
-            {errors.password?.message}
+            {errors.passwordConfirmation?.message}
           </Typography>
-          <input {...register("password")} />
-          <Typography color="secondary" component="span">
-            {errors.password?.message}
-          </Typography>
-          <input {...register("passwordConfirmation")} />
-          <Typography color="secondary" component="span">
-            {errors.password?.message}
-          </Typography>
+          {watchType === AuthRoles.EMPRESARIO ? (
+            <>
+              <input
+                {...register("business")}
+                placeholder="Nombre de su negocio"
+              />
+              <Typography color="secondary" component="span">
+                {errors.business?.message}
+              </Typography>
+            </>
+          ) : (
+            ""
+          )}
+
           <select {...register("type")}>
-            <option value="empresario">Microempresa</option>
-            <option value="normal">Normal</option>
+            <option value={AuthRoles.EMPRESARIO}>Microempresa</option>
+            <option value={AuthRoles.NORMAL}>Normal</option>
           </select>
           <input type="submit" />
         </form>

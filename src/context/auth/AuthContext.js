@@ -10,7 +10,7 @@ export const AuthReducer = (state, { payload, type }) => {
         ...state,
         isSignout: false,
         userToken: payload.token,
-        role: payload.role,
+        role: payload.type,
       };
     case "":
       return {
