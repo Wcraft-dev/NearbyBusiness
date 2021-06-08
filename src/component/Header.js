@@ -5,6 +5,9 @@ import {
   AppBar,
   Slide,
   Toolbar,
+  Box,
+  Drawer,
+  MenuItem,
   useScrollTrigger,
   Typography,
   IconButton,
@@ -16,8 +19,22 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
+  responsive: {
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+    [theme.breakpoints.up("sm")]: {
+      display: "flex",
+    },
+  },
   menuButton: {
     marginRight: theme.spacing(2),
+    [theme.breakpoints.down("xs")]: {
+      display: "flex",
+    },
+    [theme.breakpoints.up("sm")]: {
+      display: "none",
+    },
   },
   title: {
     flexGrow: 1,
@@ -44,6 +61,7 @@ export default function Header(props) {
   const classes = useStyles();
   const { userToken, homePath } = useContext(AuthContext);
   const { pathname } = useLocation();
+  const [drawer, setDrawerOpen] = React.useState(false);
 
   return (
     <div className={classes.root}>
@@ -76,17 +94,25 @@ export default function Header(props) {
                 className={classes.menuButton}
                 color="inherit"
                 aria-label="menu"
+                onClick={() => setDrawerOpen(true)}
               >
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" className={classes.title}>
                 Nerby Business
               </Typography>
-              {props.children}
+              <Box className={classes.responsive}>{props.children}</Box>
             </Toolbar>
           </AppBar>
         </HideOnScroll>
       )}
+      <Drawer
+        variant="temporary"
+        open={drawer}
+        onClose={() => setDrawerOpen(false)}
+      >
+        <MenuItem style={{ display: "block" }}>{props.children}</MenuItem>
+      </Drawer>
     </div>
   );
 }
