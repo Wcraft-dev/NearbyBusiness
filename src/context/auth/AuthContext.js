@@ -11,6 +11,7 @@ export const AuthReducer = (state, { payload, type }) => {
         userToken: payload.token,
         role: payload.type,
         homePath: payload.homePath,
+        business: payload.business,
       };
     case SIGN_OUT:
       return {

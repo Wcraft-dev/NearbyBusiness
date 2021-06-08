@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import {
   Button,
+  Box,
+  Fade,
   Container,
   IconButton,
   Grid,
@@ -8,9 +10,10 @@ import {
   CardContent,
   CardHeader,
   CardActions,
+  CardMedia,
   Typography,
 } from "@material-ui/core";
-import { db } from "../../firebase";
+import { db, storage } from "../../firebase";
 import { toast } from "react-toastify";
 import { Create, Close } from "@material-ui/icons/";
 import FormBusinessmen from "../../component/FormBusinessmen";
@@ -21,7 +24,7 @@ import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 
 function Index() {
   const [products, setProducts] = useState([]);
-  const [currentId, setCurrentId] = useState("");
+  const [currentId, setCurrentId] = useState({ id: "", name: "" });
   const formatter = buildFormatter(espanishStrings);
   const { userToken } = useContext(AuthContext);
 
@@ -42,61 +45,107 @@ function Index() {
     getProduct();
   }, []);
 
-  const deleteProduct = async (id) => {
+  const deleteProduct = async (id, nameI) => {
     if (window.confirm("Estas seguro de borrar este produto")) {
-      db.collection("products").doc(id).delete();
-      toast("Producto borrado exitosamente", { type: "warning" });
+      let desertRef = storage.ref(nameI);
+      try {
+        await desertRef.delete();
+        db.collection("products").doc(id).delete();
+        toast("Producto borrado exitosamente", { type: "warning" });
+      } catch (e) {
+        toast("Hubo un error al borrar", { type: "error" });
+        console.log(e);
+      }
     }
   };
 
   return (
     <Container maxWidth="lg">
-      <FormBusinessmen currentId={currentId} ok={() => setCurrentId("")} />
-      <Button variant="contained" color="primary">
-        Cambiar Informacion de contacto
-      </Button>
-      <Grid container spacing={3}>
-        {products.map((obj) => {
-          return (
-            <Grid item xs={5} key={obj.id}>
-              <Card>
-                <CardHeader
-                  title={obj.nameProduct}
-                  action={
-                    <IconButton
-                      aria-label="delete"
-                      onClick={() => deleteProduct(obj.id)}
-                    >
-                      <Close />
-                    </IconButton>
-                  }
-                />
-                <CardContent>
-                  <Typography> {obj.descriptionProduct}</Typography>
-                  <Typography> {obj.amount}</Typography>
-                  <Typography>
-                    <TimeAgo
-                      date={obj.createdOn.toDate()}
-                      formatter={formatter}
+      <Box mt={4}>
+        <Box mb={4}>
+          <FormBusinessmen
+            currentId={currentId}
+            ok={() => setCurrentId({ id: "", name: "" })}
+          />
+        </Box>
+        <Grid container spacing={2}>
+          {products.map((obj) => {
+            return (
+              <Fade in={true} timeout={1000} key={obj.id}>
+                <Grid item xs={12} sm={4} md={4}>
+                  <Card elevation={3}>
+                    <CardHeader
+                      title={obj.nameProduct}
+                      subheader={
+                        <>
+                          {"se actualizo "}
+                          <TimeAgo
+                            date={obj.updateOn.toDate()}
+                            formatter={formatter}
+                          />
+                        </>
+                      }
+                      action={
+                        <IconButton
+                          aria-label="delete"
+                          onClick={() => deleteProduct(obj.id, obj.nameI)}
+                        >
+                          <Close />
+                        </IconButton>
+                      }
                     />
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    startIcon={<Create />}
-                    onClick={() => setCurrentId(obj.id)}
-                  >
-                    Editar
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+                    <CardMedia
+                      image={obj.image}
+                      style={{ height: 0, paddingTop: "56.25%" }}
+                      title={obj.nameProduct}
+                    />
+                    <CardContent>
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        align="justify"
+                        paragraph
+                      >
+                        {obj.descriptionProduct}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Grid container>
+                        <Grid item xs={12}>
+                          <Typography variant="caption">
+                            {"Se subio "}
+                            <TimeAgo
+                              date={obj.createdOn.toDate()}
+                              formatter={formatter}
+                            />
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography
+                            variant="h6"
+                            style={{ fontWeight: "bold" }}
+                          >
+                            $ {new Intl.NumberFormat().format(obj.amount)}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                      <IconButton
+                        aria-label="edit"
+                        size="small"
+                        onClick={() =>
+                          setCurrentId({ id: obj.id, name: obj.nameI })
+                        }
+                      >
+                        <Create />
+                      </IconButton>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              </Fade>
+            );
+          })}
+        </Grid>
+      </Box>
     </Container>
   );
 }

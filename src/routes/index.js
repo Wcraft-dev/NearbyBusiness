@@ -96,27 +96,23 @@ function PrivateRoute({ children, route, ...rest }) {
   return (
     <>
       {valid && (
-        <Route
-          {...rest}
-          render={(props) => {
-            return <>{<route.component />}</>;
-          }}
-        />
+        <Route {...rest}>
+          <route.component />
+        </Route>
       )}
       {!valid && (
-        <Route
-          {...rest}
-          render={({ location }) => {
-            return (
+        <Route {...rest}>
+          {({ location }) => (
+            <div className="page">
               <Redirect
                 to={{
                   pathname: "/login",
                   state: { from: location },
                 }}
               />
-            );
-          }}
-        />
+            </div>
+          )}
+        </Route>
       )}
     </>
   );

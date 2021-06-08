@@ -10,6 +10,7 @@ const AuthState = (props) => {
     userToken: null,
     role: null,
     homePath: null,
+    business: null,
   };
   const [state, dispatch] = useReducer(AuthReducer, initialState);
 
@@ -141,6 +142,7 @@ const AuthState = (props) => {
         userToken: state.userToken,
         role: state.role,
         homePath: state.homePath,
+        business: state.business,
         signIn,
         signUp,
         signOut,
