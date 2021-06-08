@@ -21,6 +21,7 @@ import AuthContext from "../../context/auth/AuthContext";
 import TimeAgo from "react-timeago";
 import espanishStrings from "react-timeago/lib/language-strings/es";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
+import { JackInTheBox } from "react-awesome-reveal";
 
 function Index() {
   const [products, setProducts] = useState([]);
@@ -63,10 +64,12 @@ function Index() {
     <Container maxWidth="lg">
       <Box mt={4}>
         <Box mb={4}>
-          <FormBusinessmen
-            currentId={currentId}
-            ok={() => setCurrentId({ id: "", name: "" })}
-          />
+          <JackInTheBox>
+            <FormBusinessmen
+              currentId={currentId}
+              ok={() => setCurrentId({ id: "", name: "" })}
+            />
+          </JackInTheBox>
         </Box>
         <Grid container spacing={2}>
           {products.map((obj) => {

@@ -1,24 +1,28 @@
-import React, { useContext } from "react";
-import { useHistory } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { useHistory, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import AuthContext, { AuthRoles } from "../../context/auth/AuthContext";
 import {
   Grid,
-  IconButton,
   FormControl,
   FormHelperText,
   Select,
   MenuItem,
+  InputAdornment,
   InputLabel,
   Typography,
   Button,
   TextField,
   Box,
   makeStyles,
+  IconButton,
   Divider,
 } from "@material-ui/core";
 import { yupResolver } from "@hookform/resolvers/yup";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import * as yup from "yup";
+import { Bounce, Roll } from "react-awesome-reveal";
 
 const schema = yup.object().shape({
   firstName: yup.string().required().min(3).max(20),
@@ -128,7 +132,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SignIn() {
+export default function SignUp() {
   const {
     control,
     watch,
@@ -142,7 +146,9 @@ function SignIn() {
   let history = useHistory();
   const classes = useStyles();
   const { signUp } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
   const watchType = watch("type");
+
   const onSubmit = async (data) => {
     const res = await signUp(data);
     if (res) {
@@ -171,213 +177,260 @@ function SignIn() {
     <Grid container style={{ height: "100vh" }}>
       <Grid item xs={12} sm={6}>
         <Box pl={2} pr={2} className={classes.splitLeft}>
-          <Box ml={6} mr={6}>
+          <Bounce>
+            <Box ml={6} mr={6}>
+              <Typography
+                variant="h5"
+                component="h4"
+                style={{ fontWeight: "bold" }}
+              >
+                Bienvenido a Nerby Business
+              </Typography>
+              <Divider className={classes.dividerLeft} />
+              <Box mt={5}>
+                <Typography variant="body1" component="p" align="justify">
+                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos
+                  blanditiis tenetur unde suscipit, quam beatae rerum inventore
+                  consectetur, neque doloribus, cupiditate numquam dignissimos
+                  laborum fugiat deleniti? Eum quasi quidem quibusdam
+                </Typography>
+              </Box>
+              <Box mt={5}>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  style={{
+                    borderRadius: "60px",
+                    paddingLeft: "5%",
+                    paddingRight: "5%",
+                  }}
+                >
+                  Conoce Mas
+                </Button>
+              </Box>
+            </Box>
+          </Bounce>
+        </Box>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <Box pl={2} pr={2} className={classes.splitRight}>
+          <Roll>
             <Typography
               variant="h5"
               component="h4"
               style={{ fontWeight: "bold" }}
             >
-              Bienvenido a Nerby Business
+              Crear Cuenta
             </Typography>
-            <Divider className={classes.dividerLeft} />
-            <Box mt={5}>
-              <Typography variant="body1" component="p" align="justify">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos
-                blanditiis tenetur unde suscipit, quam beatae rerum inventore
-                consectetur, neque doloribus, cupiditate numquam dignissimos
-                laborum fugiat deleniti? Eum quasi quidem quibusdam
-              </Typography>
-            </Box>
-            <Box mt={5}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                style={{
-                  borderRadius: "60px",
-                  paddingLeft: "5%",
-                  paddingRight: "5%",
-                }}
-              >
-                Conoce Mas
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <Box pl={2} pr={2} className={classes.splitRight}>
-          <Typography
-            variant="h5"
-            component="h4"
-            style={{ fontWeight: "bold" }}
-          >
-            Crear Cuenta
-          </Typography>
-          <Divider className={classes.dividerRight} />
+            <Divider className={classes.dividerRight} />
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid
-              container
-              direction="column"
-              justify="center"
-              alignItems="center"
-              className={classes.form}
-            >
-              <Grid item container spacing={2}>
-                <Grid item xs={6}>
-                  <Controller
-                    name="firstName"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <TextField
-                        label="Nombre"
-                        placeholder="Juan"
-                        error={errors.firstName ? true : false}
-                        helperText={errors.firstName?.message}
-                        {...field}
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Controller
-                    name="lastName"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <TextField
-                        label="Apellido"
-                        placeholder="Garzon"
-                        error={errors.lastName ? true : false}
-                        helperText={errors.lastName?.message}
-                        {...field}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-              <Grid item className={classes.inputs}>
-                <Controller
-                  name="email"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      label="Correo"
-                      placeholder="ejemplo@nerbyBusiness.com"
-                      error={errors.email ? true : false}
-                      className={classes.inputs}
-                      helperText={errors.email?.message}
-                      {...field}
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Grid
+                container
+                direction="column"
+                justify="center"
+                alignItems="center"
+                className={classes.form}
+              >
+                <Grid item container spacing={2}>
+                  <Grid item xs={6}>
+                    <Controller
+                      name="firstName"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          label="Nombre"
+                          placeholder="Juan"
+                          error={errors.firstName ? true : false}
+                          helperText={errors.firstName?.message}
+                          {...field}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </Grid>
-              <Grid item container spacing={2}>
-                <Grid item xs={12} sm={12} md={6}>
-                  <Controller
-                    name="password"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <TextField
-                        label="Contraseña"
-                        placeholder="********"
-                        className={classes.inputs}
-                        error={errors.password ? true : false}
-                        helperText={errors.password?.message}
-                        {...field}
-                      />
-                    )}
-                  />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Controller
+                      name="lastName"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          label="Apellido"
+                          placeholder="Garzon"
+                          error={errors.lastName ? true : false}
+                          helperText={errors.lastName?.message}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} sm={12} md={6}>
-                  <Controller
-                    name="passwordConfirmation"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                      <TextField
-                        label="Confirmar contraseña"
-                        placeholder="********"
-                        className={classes.inputs}
-                        error={errors.passwordConfirmation ? true : false}
-                        helperText={errors.passwordConfirmation?.message}
-                        {...field}
-                      />
-                    )}
-                  />
-                </Grid>
-              </Grid>
-              {watchType === AuthRoles.EMPRESARIO ? (
                 <Grid item className={classes.inputs}>
                   <Controller
-                    name="business"
+                    name="email"
                     control={control}
                     defaultValue=""
                     render={({ field }) => (
                       <TextField
-                        label="Nombre de la empresa"
-                        placeholder="Tesla"
+                        label="Correo"
+                        placeholder="ejemplo@nerbyBusiness.com"
+                        error={errors.email ? true : false}
                         className={classes.inputs}
-                        error={errors.business ? true : false}
-                        helperText={errors.business?.message}
+                        helperText={errors.email?.message}
                         {...field}
                       />
                     )}
                   />
                 </Grid>
-              ) : (
-                ""
-              )}
+                <Grid item container spacing={2}>
+                  <Grid item xs={12} sm={12} md={6}>
+                    <Controller
+                      name="password"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          label="Contraseña"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="********"
+                          className={classes.inputs}
+                          error={errors.password ? true : false}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  aria-label="toggle password visibility"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <Visibility />
+                                  ) : (
+                                    <VisibilityOff />
+                                  )}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          helperText={errors.password?.message}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={12} md={6}>
+                    <Controller
+                      name="passwordConfirmation"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          label="Confirmar contraseña"
+                          placeholder="********"
+                          type={showPassword ? "text" : "password"}
+                          className={classes.inputs}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  aria-label="toggle password visibility"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <Visibility />
+                                  ) : (
+                                    <VisibilityOff />
+                                  )}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                          error={errors.passwordConfirmation ? true : false}
+                          helperText={errors.passwordConfirmation?.message}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </Grid>
+                </Grid>
+                {watchType === AuthRoles.EMPRESARIO ? (
+                  <Grid item className={classes.inputs}>
+                    <Controller
+                      name="business"
+                      control={control}
+                      defaultValue=""
+                      render={({ field }) => (
+                        <TextField
+                          label="Nombre de la empresa"
+                          placeholder="Tesla"
+                          className={classes.inputs}
+                          error={errors.business ? true : false}
+                          helperText={errors.business?.message}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </Grid>
+                ) : (
+                  ""
+                )}
 
-              <Grid item className={classes.inputs}>
-                <FormControl
-                  className={classes.inputs}
-                  error={errors.type ? true : false}
-                >
-                  <InputLabel id="select">Tipo</InputLabel>
-                  <Controller
-                    name="type"
-                    control={control}
-                    defaultValue={AuthRoles.NORMAL}
-                    render={({ field: { onChange, value } }) => (
-                      <Select
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
-                        labelId="select"
-                        id="select"
-                      >
-                        <MenuItem value="">
-                          <em>None</em>
-                        </MenuItem>
-                        <MenuItem value={AuthRoles.EMPRESARIO}>
-                          Microempresa
-                        </MenuItem>
-                        <MenuItem value={AuthRoles.NORMAL}>Normal</MenuItem>
-                      </Select>
-                    )}
-                  />
-                  <FormHelperText>{errors.type?.message}</FormHelperText>
-                </FormControl>
+                <Grid item className={classes.inputs}>
+                  <FormControl
+                    className={classes.inputs}
+                    error={errors.type ? true : false}
+                  >
+                    <InputLabel id="select">Tipo</InputLabel>
+                    <Controller
+                      name="type"
+                      control={control}
+                      defaultValue={AuthRoles.NORMAL}
+                      render={({ field: { onChange, value } }) => (
+                        <Select
+                          value={value}
+                          onChange={(e) => onChange(e.target.value)}
+                          labelId="select"
+                          id="select"
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          <MenuItem value={AuthRoles.EMPRESARIO}>
+                            Microempresa
+                          </MenuItem>
+                          <MenuItem value={AuthRoles.NORMAL}>Normal</MenuItem>
+                        </Select>
+                      )}
+                    />
+                    <FormHelperText>{errors.type?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item className={classes.noAccount}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    component={Link}
+                    to="/login"
+                  >
+                    Ya tienes cuenta?
+                  </Typography>
+                </Grid>
+
+                <Grid item className={classes.inputs}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="secondary"
+                    className={classes.inputs}
+                  >
+                    Resgistrarse
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid item className={classes.inputs}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="secondary"
-                  className={classes.inputs}
-                >
-                  Resgistrarse
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
+            </form>
+          </Roll>
         </Box>
       </Grid>
     </Grid>
   );
 }
-
-export default SignIn;

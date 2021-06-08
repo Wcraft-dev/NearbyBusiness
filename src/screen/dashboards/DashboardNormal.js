@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Button,
   Container,
   Collapse,
   InputAdornment,
@@ -31,6 +30,7 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import SearchIcon from "@material-ui/icons/Search";
 import { db } from "../../firebase";
+import { Zoom } from "react-awesome-reveal";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -175,34 +175,41 @@ export default function DashboardNormal() {
     <Container maxWidth="lg">
       <Box mt={4}>
         <Box mb={4}>
-          <Grid container direction="row" justify="center" alignItems="center">
-            <Grid item>
-              <TextField
-                label="Buscar producto"
-                placeholder="Zapatillas"
-                variant="outlined"
-                className={classes.search}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                onKeyUp={(text) => search(text.target.value)}
-                helperText={error !== null ? error : ""}
-              />
+          <Zoom>
+            <Grid
+              container
+              direction="row"
+              justify="center"
+              alignItems="center"
+            >
+              <Grid item>
+                <TextField
+                  label="Buscar producto"
+                  placeholder="Zapatillas"
+                  variant="outlined"
+                  className={classes.search}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  onKeyUp={(text) => search(text.target.value)}
+                  helperText={error !== null ? error : ""}
+                />
+              </Grid>
+              <Grid item>
+                <IconButton
+                  aria-controls="simple-menu"
+                  aria-haspopup="true"
+                  onClick={(event) => setAnchorEl(event.currentTarget)}
+                >
+                  <FilterListIcon />
+                </IconButton>
+              </Grid>
             </Grid>
-            <Grid item>
-              <IconButton
-                aria-controls="simple-menu"
-                aria-haspopup="true"
-                onClick={(event) => setAnchorEl(event.currentTarget)}
-              >
-                <FilterListIcon />
-              </IconButton>
-            </Grid>
-          </Grid>
+          </Zoom>
         </Box>
         <Menu
           id="simple-menu"
