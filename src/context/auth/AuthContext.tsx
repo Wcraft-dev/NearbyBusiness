@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import { AUTH, SIGN_OUT } from "../types";
 
-const AuthContext = createContext();
+const AuthContext = createContext("");
 
 export const AuthReducer = (state, { payload, type }) => {
   switch (type) {

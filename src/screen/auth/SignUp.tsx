@@ -228,7 +228,7 @@ export default function SignUp() {
               <Grid
                 container
                 direction="column"
-                justify="center"
+                justifyContent="center"
                 alignItems="center"
                 className={classes.form}
               >
@@ -243,7 +243,9 @@ export default function SignUp() {
                           label="Nombre"
                           placeholder="Juan"
                           error={errors.firstName ? true : false}
-                          helperText={errors.firstName?.message}
+                          helperText={
+                            errors.firstName ? errors.firstName.message : ""
+                          }
                           {...field}
                         />
                       )}
@@ -259,7 +261,9 @@ export default function SignUp() {
                           label="Apellido"
                           placeholder="Garzon"
                           error={errors.lastName ? true : false}
-                          helperText={errors.lastName?.message}
+                          helperText={
+                            errors.lastName ? errors.lastName.message : ""
+                          }
                           {...field}
                         />
                       )}
@@ -277,7 +281,7 @@ export default function SignUp() {
                         placeholder="ejemplo@nerbyBusiness.com"
                         error={errors.email ? true : false}
                         className={classes.inputs}
-                        helperText={errors.email?.message}
+                        helperText={errors.email ? errors.email.message : ""}
                         {...field}
                       />
                     )}
@@ -312,7 +316,9 @@ export default function SignUp() {
                               </InputAdornment>
                             ),
                           }}
-                          helperText={errors.password?.message}
+                          helperText={
+                            errors.password ? errors.password.message : ""
+                          }
                           {...field}
                         />
                       )}
@@ -346,7 +352,11 @@ export default function SignUp() {
                             ),
                           }}
                           error={errors.passwordConfirmation ? true : false}
-                          helperText={errors.passwordConfirmation?.message}
+                          helperText={
+                            errors.passwordConfirmation
+                              ? errors.passwordConfirmation.message
+                              : ""
+                          }
                           {...field}
                         />
                       )}
@@ -365,7 +375,9 @@ export default function SignUp() {
                           placeholder="Tesla"
                           className={classes.inputs}
                           error={errors.business ? true : false}
-                          helperText={errors.business?.message}
+                          helperText={
+                            errors.business ? errors.business.message : ""
+                          }
                           {...field}
                         />
                       )}
@@ -402,7 +414,9 @@ export default function SignUp() {
                         </Select>
                       )}
                     />
-                    <FormHelperText>{errors.type?.message}</FormHelperText>
+                    <FormHelperText>
+                      {errors.type ? errors.type.message : ""}
+                    </FormHelperText>
                   </FormControl>
                 </Grid>
                 <Grid item className={classes.noAccount}>

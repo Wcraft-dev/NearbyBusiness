@@ -1,11 +1,19 @@
-import React, { useReducer, useEffect } from "react";
+import React, { useReducer, useEffect, FC } from "react";
 import AuthContext, { AuthReducer, AuthRoles } from "./AuthContext";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  signInWithPopup,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { GoogleAuthProvider } from "firebase/auth";
 import { auth, db } from "../../firebase";
-import firebase from "firebase/app";
+import { doc, setDoc, collection, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { AUTH, SIGN_OUT } from "../types";
 
-const AuthState = (props) => {
+const AuthState: FC = (props) => {
   const initialState = {
     userToken: null,
     role: null,
@@ -51,7 +59,7 @@ const AuthState = (props) => {
 
   const signIn = async (data) => {
     try {
-      await auth.signInWithEmailAndPassword(data.email, data.password);
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       toast("Ingresaste con extio");
       return true;
     } catch (e) {
@@ -60,11 +68,11 @@ const AuthState = (props) => {
   };
 
   const googleSingIn = async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
     try {
-      const res = await auth.signInWithPopup(provider);
+      const res = await signInWithPopup(auth, provider);
       if (res.credential) {
-        await db.collection("users").doc(res.user.uid).set({
+        await setDoc(doc(db, "users", res.user.uid), {
           name: res.user.displayName,
           email: res.user.email,
           photo: res.user.photoURL,
@@ -79,11 +87,12 @@ const AuthState = (props) => {
   };
   const signUp = async (data) => {
     try {
-      const res = await auth.createUserWithEmailAndPassword(
+      const res = await createUserWithEmailAndPassword(
+        auth,
         data.email,
         data.password
       );
-      await db.collection("users").doc(res.user.uid).set({
+      await setDoc(doc(db, "users", res.user.uid), {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
@@ -97,10 +106,10 @@ const AuthState = (props) => {
       validErrorsFB(e);
     }
   };
-  const signOut = async () => {
+  const fnsignOut = async () => {
     try {
       dispatch({ type: SIGN_OUT, payload: initialState });
-      auth.signOut();
+      signOut(auth);
     } catch (e) {
       validErrorsFB(e);
     }
@@ -114,26 +123,28 @@ const AuthState = (props) => {
     }
   };
   const dataUser = async (id) => {
-    const res = await db.collection("users").doc(id).get();
-    let homePath = null;
-    if (res.data().type === AuthRoles.EMPRESARIO) {
-      homePath = AuthRoles.EMPRESARIO_PATH;
-    } else if (res.data().type === AuthRoles.NORMAL) {
-      homePath = AuthRoles.NORMAL_PATH;
+    const res = await getDoc(doc(db, "users", id));
+    const data = res.data();
+    if (res.exists()) {
+      let homePath = null;
+      if (data?.type === AuthRoles.EMPRESARIO) {
+        homePath = AuthRoles.EMPRESARIO_PATH;
+      } else if (data?.type === AuthRoles.NORMAL) {
+        homePath = AuthRoles.NORMAL_PATH;
+      }
+      const payload = { ...res.data(), token: id, homePath };
+      dispatch({ type: AUTH, payload });
+    } else {
+      toast.error("No se encontro el usuario");
     }
-    const data = { ...res.data(), token: id, homePath };
-    dispatch({ type: AUTH, payload: data });
   };
-  const authListener = async () => {
-    auth.onAuthStateChanged((user) => {
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         dataUser(user.uid);
       }
     });
-  };
-
-  useEffect(() => {
-    authListener();
   }, []);
 
   return (
@@ -145,7 +156,7 @@ const AuthState = (props) => {
         business: state.business,
         signIn,
         signUp,
-        signOut,
+        fnsignOut,
         googleSingIn,
         accessRoute,
       }}

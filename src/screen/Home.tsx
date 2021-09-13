@@ -103,7 +103,7 @@ export default function Home({ routes }) {
           <Grid
             container
             direction="column"
-            justify="center"
+            justifyContent="center"
             alignItems="center"
           >
             <Grid item>
@@ -251,7 +251,7 @@ export default function Home({ routes }) {
 
       <Container maxWidth="lg">
         <Slide direction="up">
-          <Grid container spacing={3} justify="center">
+          <Grid container spacing={3} justifyContent="center">
             {datosTemp.map((obj) => {
               return (
                 <Grid item sm={3} key={obj.id}>
@@ -292,7 +292,7 @@ export default function Home({ routes }) {
                         <Grid
                           container
                           direction="row"
-                          justify="flex-start"
+                          justifyContent="flex-start"
                           alignItems="center"
                         >
                           <Grid item>
@@ -395,7 +395,7 @@ export default function Home({ routes }) {
                           <Grid
                             container
                             direction="row"
-                            justify="center"
+                            justifyContent="center"
                             alignItems="flex-end"
                           >
                             <Grid item>
@@ -433,7 +433,7 @@ export default function Home({ routes }) {
                           <Grid
                             container
                             direction="row"
-                            justify="center"
+                            justifyContent="center"
                             alignItems="flex-end"
                           >
                             <Grid item>
@@ -471,7 +471,7 @@ export default function Home({ routes }) {
                           <Grid
                             container
                             direction="row"
-                            justify="center"
+                            justifyContent="center"
                             alignItems="flex-end"
                           >
                             <Grid item>
@@ -509,7 +509,7 @@ export default function Home({ routes }) {
                           <Grid
                             container
                             direction="row"
-                            justify="center"
+                            justifyContent="center"
                             alignItems="flex-end"
                           >
                             <Grid item>
@@ -687,7 +687,11 @@ export default function Home({ routes }) {
                 </CardContent>
               </CardActionArea>
               <CardActions>
-                <Grid container alignItems="center" justify="space-evenly">
+                <Grid
+                  container
+                  alignItems="center"
+                  justifyContent="space-evenly"
+                >
                   <Grid item>
                     <IconButton className={classes.IconButtonColor}>
                       <Facebook />
@@ -745,7 +749,11 @@ export default function Home({ routes }) {
                 </CardContent>
               </CardActionArea>
               <CardActions>
-                <Grid container alignItems="center" justify="space-evenly">
+                <Grid
+                  container
+                  alignItems="center"
+                  justifyContent="space-evenly"
+                >
                   <Grid item>
                     <IconButton className={classes.IconButtonColor}>
                       <Facebook />
@@ -803,7 +811,11 @@ export default function Home({ routes }) {
                 </CardContent>
               </CardActionArea>
               <CardActions>
-                <Grid container alignItems="center" justify="space-evenly">
+                <Grid
+                  container
+                  alignItems="center"
+                  justifyContent="space-evenly"
+                >
                   <Grid item>
                     <IconButton className={classes.IconButtonColor}>
                       <Facebook />
@@ -848,7 +860,11 @@ export default function Home({ routes }) {
                     </Box>
                   </Typography>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <Grid container justify="flex-start" direction="column">
+                    <Grid
+                      container
+                      justifyContent="flex-start"
+                      direction="column"
+                    >
                       <Link href="/">Tablero</Link>
                       <Link href="/">Perfil</Link>
                       <Link href="/">Ayuda</Link>
@@ -869,7 +885,11 @@ export default function Home({ routes }) {
                     </Box>
                   </Typography>
                   <Typography variant="subtitle1" color="textSecondary">
-                    <Grid container justify="flex-start" direction="column">
+                    <Grid
+                      container
+                      justifyContent="flex-start"
+                      direction="column"
+                    >
                       <Link href="/">Tablero</Link>
                       <Link href="/">Perfil</Link>
                       <Link href="/">Ayuda</Link>
@@ -890,7 +910,11 @@ export default function Home({ routes }) {
                     </Box>
                   </Typography>
                   <Typography variant="subtitle1" color="textPrimary">
-                    <Grid container justify="flex-start" direction="column">
+                    <Grid
+                      container
+                      justifyContent="flex-start"
+                      direction="column"
+                    >
                       <Link href="/">Tablero</Link>
                       <Link href="/">Perfil</Link>
                       <Link href="/">Ayuda</Link>
@@ -900,7 +924,11 @@ export default function Home({ routes }) {
                   </Typography>
                 </Grid>
                 <Grid item md>
-                  <Grid container direction="column" justify="space-around">
+                  <Grid
+                    container
+                    direction="column"
+                    justifyContent="space-around"
+                  >
                     <Grid item>
                       <Typography component="h3">
                         <Box
@@ -936,7 +964,7 @@ export default function Home({ routes }) {
                 </Grid>
               </Grid>
               <Box pt={4} pb={4}>
-                <Grid container direction="row" justify="space-around">
+                <Grid container direction="row" justifyContent="space-around">
                   <Grid item>
                     <Grid container direction="column" alignItems="center">
                       <IconButton color="secondary" size="medium" href="#">
@@ -955,7 +983,7 @@ export default function Home({ routes }) {
                   </Grid>
                 </Grid>
               </Box>
-              <Grid container justify="center">
+              <Grid container justifyContent="center">
                 <Typography
                   variant="body2"
                   color="textSecondary"

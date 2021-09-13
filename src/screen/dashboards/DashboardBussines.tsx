@@ -22,6 +22,8 @@ import TimeAgo from "react-timeago";
 import espanishStrings from "react-timeago/lib/language-strings/es";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 import { JackInTheBox } from "react-awesome-reveal";
+import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
 
 function Index() {
   const [products, setProducts] = useState([]);
@@ -29,8 +31,8 @@ function Index() {
   const formatter = buildFormatter(espanishStrings);
   const { userToken } = useContext(AuthContext);
 
-  const getProduct = async () => {
-    db.collection("products").onSnapshot((querySnapshot) => {
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "products"), (querySnapshot) => {
       const docs = [];
       querySnapshot.forEach((doc) => {
         const d = doc.data();
@@ -40,21 +42,20 @@ function Index() {
       });
       setProducts(docs);
     });
-  };
-
-  useEffect(() => {
-    getProduct();
+    return () => {
+      unsub();
+    };
   }, []);
 
   const deleteProduct = async (id, nameI) => {
     if (window.confirm("Estas seguro de borrar este produto")) {
-      let desertRef = storage.ref(nameI);
+      let desertRef = ref(storage, nameI);
       try {
-        await desertRef.delete();
-        db.collection("products").doc(id).delete();
+        await deleteObject(desertRef);
+        await deleteDoc(doc(db, "products", id));
         toast("Producto borrado exitosamente", { type: "warning" });
       } catch (e) {
-        toast("Hubo un error al borrar", { type: "error" });
+        toast.error("Hubo un error al borrar");
         console.log(e);
       }
     }
@@ -80,13 +81,13 @@ function Index() {
                     <CardHeader
                       title={obj.nameProduct}
                       subheader={
-                        <>
+                        <div>
                           {"se actualizo "}
                           <TimeAgo
                             date={obj.updateOn.toDate()}
                             formatter={formatter}
                           />
-                        </>
+                        </div>
                       }
                       action={
                         <IconButton

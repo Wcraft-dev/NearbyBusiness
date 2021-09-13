@@ -94,7 +94,7 @@ function PrivateRoute({ children, route, ...rest }) {
   const valid = accessRoute(route);
 
   return (
-    <>
+    <div>
       {valid && (
         <Route {...rest}>
           <route.component />
@@ -114,6 +114,6 @@ function PrivateRoute({ children, route, ...rest }) {
           )}
         </Route>
       )}
-    </>
+    </div>
   );
 }

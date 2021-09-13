@@ -23,6 +23,13 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import AuthContext from "../context/auth/AuthContext";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import { addDoc, getDoc, doc, collection, updateDoc } from "firebase/firestore";
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 const FILE_SIZE = 160 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/gif", "image/png"];
@@ -65,14 +72,14 @@ const FormBusinessmen = (props) => {
 
   const { userToken, business } = useContext(AuthContext);
   const [uploadValue, setUpladValue] = useState(0);
-  const [checked, setChecked] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [url, setUrl] = useState(null);
+  const [checked, setChecked] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [url, setUrl] = useState<string>("");
 
   const getProductById = async (id) => {
     if (id) {
-      const doc = await db.collection("products").doc(id).get();
-      const docs = doc.data();
+      const res = await getDoc(doc(db, "products", id));
+      const docs = res.data();
       setValue("nameProduct", docs.nameProduct, {
         shouldValidate: true,
         shouldDirty: true,
@@ -93,7 +100,7 @@ const FormBusinessmen = (props) => {
     }
   }, [props.currentId.id]);
   const resetForm = () => {
-    setUrl(null);
+    setUrl("");
     setLoading(false);
     let input = document.getElementById("button-file");
     input.value = "";
@@ -110,18 +117,18 @@ const FormBusinessmen = (props) => {
 
   const uploadImage = (data, next) => {
     let file = data.image[0];
-    let nameI = `pictureProducts/${userToken}_product_${Math.floor(
+    let nameI: string = `pictureProducts/${userToken}_product_${Math.floor(
       Math.random() * (10000 - 2 + 1) + 2
     )}`;
-    const storageRef = storage.ref(nameI);
-    const task = storageRef.put(file);
+    const storageRef = ref(storage, nameI);
+    const task = uploadBytesResumable(storageRef, file);
     task.on(
-      "state_change",
+      "state_changed",
       (snapshot) => {
-        const { byteTransferred, totalBytes } = snapshot;
+        const { bytesTransferred, totalBytes } = snapshot;
         let porcentage;
-        if (byteTransferred < totalBytes) {
-          porcentage = (byteTransferred / totalBytes) * 100;
+        if (bytesTransferred < totalBytes) {
+          porcentage = (bytesTransferred / totalBytes) * 100;
         } else {
           porcentage = 100;
         }
@@ -132,13 +139,14 @@ const FormBusinessmen = (props) => {
           type: "error",
         });
       },
-      async () => {
-        const downloadURL = await task.snapshot.ref.getDownloadURL();
-        setUrl(downloadURL);
-        toast("Se ha subido la imagen correctamente", {
-          type: "success",
-        });
-        next({ nameI, downloadURL });
+      () => {
+        const asy = async () => {
+          const downloadURL = await getDownloadURL(task.snapshot.ref);
+          setUrl(downloadURL);
+          toast.success("Se ha subido la imagen correctamente");
+          next({ nameI, downloadURL });
+        };
+        asy();
       }
     );
   };
@@ -153,7 +161,7 @@ const FormBusinessmen = (props) => {
       const { nameI, downloadURL } = img;
       upKing = { ...upKing, nameI, image: downloadURL };
     }
-    await db.collection("products").doc(props.currentId.id).update(upKing);
+    await updateDoc(doc(db, "products", props.currentId.id), upKing);
     toast("Producto actualizado exitosamente", { type: "info" });
     resetForm();
     props.ok();
@@ -163,12 +171,13 @@ const FormBusinessmen = (props) => {
     if (props.currentId.id !== "") {
       if (checked) {
         if (data.image) {
-          var desertRef = storage.ref(`${props.currentId.name}`);
+          var desertRef = ref(storage, props.currentId.name);
           try {
-            await desertRef.delete();
+            await deleteObject(desertRef);
             uploadImage(data, (d) => update(data, d));
           } catch (e) {
             toast("hubo un error al actualizar", { type: "error" });
+            console.log(e);
             setLoading(false);
           }
         } else {
@@ -191,8 +200,8 @@ const FormBusinessmen = (props) => {
             createdOn: new Date(),
             updateOn: new Date(),
           };
-          await db.collection("products").doc().set(king);
-          toast("Producto guardado exitosamente", { type: "success" });
+          await addDoc(collection(db, "products"), king);
+          toast.success("Producto guardado exitosamente");
           resetForm();
         });
       } else {
@@ -252,7 +261,9 @@ const FormBusinessmen = (props) => {
                       label="Nombre del producto"
                       className={classes.inputs}
                       error={errors.nameProduct ? true : false}
-                      helperText={errors.nameProduct?.message}
+                      helperText={
+                        errors.nameProduct ? errors.nameProduct.message : ""
+                      }
                     />
                   )}
                 />
@@ -274,7 +285,7 @@ const FormBusinessmen = (props) => {
                         value={value}
                         error={errors.amount ? true : false}
                         label="Valor del producto"
-                        helperText={errors.amount?.message}
+                        helperText={errors.amount ? errors.amount.message : ""}
                       />
                     );
                   }}
@@ -294,14 +305,18 @@ const FormBusinessmen = (props) => {
                       className={classes.inputs}
                       multiline
                       error={errors.descriptionProduct ? true : false}
-                      helperText={errors.descriptionProduct?.message}
+                      helperText={
+                        errors.descriptionProduct
+                          ? errors.descriptionProduct.message
+                          : ""
+                      }
                     />
                   )}
                 />
               </Grid>
 
               {props.currentId.id !== "" ? (
-                <>
+                <div>
                   <FormControlLabel
                     className={classes.inputs}
                     control={
@@ -318,7 +333,7 @@ const FormBusinessmen = (props) => {
                       item
                       container
                       direction="column"
-                      justify="center"
+                      justifyContent="center"
                       alignItems="flex-start"
                     >
                       <label htmlFor="button-file">
@@ -338,13 +353,13 @@ const FormBusinessmen = (props) => {
                       ></Typography>
                     </Grid>
                   </Collapse>
-                </>
+                </div>
               ) : (
                 <Grid
                   item
                   container
                   direction="column"
-                  justify="center"
+                  justifyContent="center"
                   alignItems="flex-start"
                 >
                   <label htmlFor="button-file">

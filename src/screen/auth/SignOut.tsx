@@ -3,11 +3,11 @@ import AuthContext from "../../context/auth/AuthContext";
 import { useHistory } from "react-router-dom";
 
 function SignOut() {
-  const { signOut } = useContext(AuthContext);
+  const { fnsignOut } = useContext(AuthContext);
   let history = useHistory();
 
   useEffect(() => {
-    signOut();
+    fnsignOut();
     history.push("/");
   });
   return (

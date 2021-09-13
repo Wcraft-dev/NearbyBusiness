@@ -196,7 +196,7 @@ function SignIn() {
               <Grid
                 container
                 direction="column"
-                justify="center"
+                justifyContent="center"
                 alignItems="center"
                 className={classes.form}
               >
@@ -211,7 +211,7 @@ function SignIn() {
                         className={classes.inputs}
                         placeholder="ejemplo@nerbyBusiness.com"
                         error={errors.email ? true : false}
-                        helperText={errors.email?.message}
+                        helperText={errors.email ? errors.email.message : ""}
                         {...field}
                       />
                     )}
@@ -245,7 +245,9 @@ function SignIn() {
                             </InputAdornment>
                           ),
                         }}
-                        helperText={errors.password?.message}
+                        helperText={
+                          errors.password ? errors.password.message : ""
+                        }
                         {...field}
                       />
                     )}

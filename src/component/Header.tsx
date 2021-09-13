@@ -46,7 +46,7 @@ const HideOnScroll = (props) => {
   const trigger = useScrollTrigger();
 
   return (
-    <>
+    <div>
       {props.position === "static" ? (
         children
       ) : (
@@ -54,7 +54,7 @@ const HideOnScroll = (props) => {
           {children}
         </Slide>
       )}
-    </>
+    </div>
   );
 };
 export default function Header(props) {

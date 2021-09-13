@@ -30,6 +30,15 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 import SearchIcon from "@material-ui/icons/Search";
 import { db } from "../../firebase";
+import {
+  doc,
+  query,
+  orderBy,
+  collection,
+  getDoc,
+  OrderByDirection,
+  onSnapshot,
+} from "firebase/firestore";
 import { Zoom } from "react-awesome-reveal";
 
 const useStyles = makeStyles((theme) => ({
@@ -69,9 +78,9 @@ const useStyles = makeStyles((theme) => ({
 export default function DashboardNormal() {
   const [products, setProducts] = useState([]);
   const [productsFB, setProductsFB] = useState([]);
-  const [filter, setFilter] = useState("desc");
+  const [filter, setFilter] = useState<OrderByDirection>("desc");
   const [open, setOpen] = useState(false);
-  const [whoView, setWhoView] = useState({ obj: {} });
+  const [whoView, setWhoView] = useState<any>({});
   const [expanded, setExpanded] = useState(false);
 
   const [error, setError] = useState(null);
@@ -90,13 +99,13 @@ export default function DashboardNormal() {
 
   const user = async (data) => {
     try {
-      const creator = await db.collection("users").doc(data.creator).get();
+      const creator = await getDoc(doc(db, "users", data.creator));
       const d = creator.data();
       const state = {
         creator: {
-          name: `${d.firstName} ${d.lastName}`,
-          email: d.email,
-          business: d.business,
+          name: `${d?.firstName} ${d?.lastName}`,
+          email: d?.email,
+          business: d?.business,
         },
         obj: {
           ...data,
@@ -107,29 +116,27 @@ export default function DashboardNormal() {
       //return {};
     }
   };
-  const getProduct = async () => {
-    let first = false;
-    db.collection("products")
-      .orderBy("createdOn", filter)
-      .onSnapshot((querySnapshot) => {
-        const docs = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          docs.push({
-            ...data,
-            id: doc.id,
-          });
-        });
-        setProductsFB(docs);
-        if (!first) {
-          setProducts(docs);
-          first = true;
-        }
-      });
-  };
-
   useEffect(() => {
-    getProduct();
+    let first = false;
+    const q = query(collection(db, "products"), orderBy("createdOn", filter));
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      const docs = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        docs.push({
+          ...data,
+          id: doc.id,
+        });
+      });
+      setProductsFB(docs);
+      if (!first) {
+        setProducts(docs);
+        first = true;
+      }
+    });
+    return () => {
+      unsub();
+    };
   }, [filter]);
 
   useEffect(() => {
@@ -179,7 +186,7 @@ export default function DashboardNormal() {
             <Grid
               container
               direction="row"
-              justify="center"
+              justifyContent="center"
               alignItems="center"
             >
               <Grid item>
@@ -301,20 +308,20 @@ export default function DashboardNormal() {
           <Box mt={5}>
             <Card elevation={3} className={classes.card}>
               <CardMedia
-                image={whoView.obj.image}
+                image={whoView.obj?.image}
                 style={{ height: 0, paddingTop: "56.25%" }}
-                title={whoView.obj.nameProduct}
+                title={whoView.obj?.nameProduct}
               />
               <CardContent>
                 <Grid
                   container
                   direction="row"
-                  justify="space-between"
+                  justifyContent="space-between"
                   alignItems="flex-start"
                 >
                   <Box>
                     <Typography variant="subtitle1" noWrap>
-                      {whoView.obj.nameProduct}
+                      {whoView.obj?.nameProduct}
                     </Typography>
                     <Typography
                       variant="body2"
@@ -322,7 +329,7 @@ export default function DashboardNormal() {
                       align="justify"
                       paragraph
                     >
-                      {whoView.obj.descriptionProduct}
+                      {whoView.obj?.descriptionProduct}
                     </Typography>
                   </Box>
                   <IconButton
@@ -339,14 +346,20 @@ export default function DashboardNormal() {
               </CardContent>
               <Collapse in={expanded} timeout="auto" mountOnEnter unmountOnExit>
                 <Typography variant="body1">
-                  {"Publicado por: " + whoView.creator?.name}
+                  {"Publicado por: " + whoView.creator
+                    ? whoView.creator?.name
+                    : ""}
                 </Typography>
 
                 <Typography variant="body1">
-                  {"Su micro empresa: " + whoView.creator?.email}
+                  {"Su micro empresa: " + whoView.creator
+                    ? whoView.creator?.email
+                    : ""}
                 </Typography>
                 <Typography variant="body1">
-                  {"Su negocio: " + whoView.creator?.business}
+                  {"Su negocio: " + whoView?.creator
+                    ? whoView.creator?.business
+                    : ""}
                 </Typography>
               </Collapse>
               <Box m={1}>
@@ -355,14 +368,18 @@ export default function DashboardNormal() {
                     <Typography variant="caption">
                       {"Subido "}
                       <TimeAgo
-                        date={whoView.obj.createdOn?.toDate()}
+                        date={
+                          whoView.obj?.createdOn
+                            ? whoView.obj?.createdOn.toDate()
+                            : ""
+                        }
                         formatter={formatter}
                       />
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="h6" style={{ fontWeight: "bold" }}>
-                      $ {new Intl.NumberFormat().format(whoView.obj.amount)}
+                      $ {new Intl.NumberFormat().format(whoView.obj?.amount)}
                     </Typography>
                   </Grid>
                 </Grid>
