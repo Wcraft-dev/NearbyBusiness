@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState, useRef } from "react";
 import {
   TextField,
   Button,
@@ -30,6 +30,14 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import {
+  FormData,
+  img,
+  Product,
+  productsConverter,
+  PropsForm,
+  UpdateProduct,
+} from "../@types/Products";
 
 const FILE_SIZE = 160 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/gif", "image/png"];
@@ -58,7 +66,10 @@ const useStyles = makeStyles((theme) => ({
     width: "400px",
   },
 }));
-const FormBusinessmen = (props) => {
+const FormBusinessmen = ({
+  productSelected: { id, pathServer },
+  success,
+}: PropsForm) => {
   const {
     control,
     handleSubmit,
@@ -68,46 +79,55 @@ const FormBusinessmen = (props) => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
   const classes = useStyles();
 
-  const { userToken, business } = useContext(AuthContext);
-  const [uploadValue, setUpladValue] = useState(0);
+  const {
+    UserData: { userToken, business },
+  } = useContext(AuthContext);
+
+  const [uploadValue, setUpladValue] = useState<number>(0);
   const [checked, setChecked] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [url, setUrl] = useState<string>("");
+  const inputFile = useRef<HTMLInputElement>(null);
 
-  const getProductById = async (id) => {
-    if (id) {
-      const res = await getDoc(doc(db, "products", id));
-      const docs = res.data();
-      setValue("nameProduct", docs.nameProduct, {
+  const getProductById = async (selected: string) => {
+    if (selected) {
+      const res = await getDoc<Product>(
+        doc(db, "products", selected).withConverter(productsConverter)
+      );
+      const docs: Product | undefined = res.data();
+      setValue("nameProduct", docs?.nameProduct, {
         shouldValidate: true,
         shouldDirty: true,
       });
-      setValue("amount", docs.amount, {
+      setValue("amount", docs?.amount, {
         shouldValidate: true,
         shouldDirty: true,
       });
-      setValue("descriptionProduct", docs.descriptionProduct, {
+      setValue("descriptionProduct", docs?.descriptionProduct, {
         shouldValidate: true,
         shouldDirty: true,
       });
     }
   };
+
   useEffect(() => {
-    if (props.currentId.id !== "") {
-      getProductById(props.currentId.id);
+    if (id !== "") {
+      getProductById(id);
     }
-  }, [props.currentId.id]);
+  }, [id]);
+
   const resetForm = () => {
     setUrl("");
+    setUpladValue(0);
     setLoading(false);
-    let input = document.getElementById("button-file");
-    input.value = "";
+    if (inputFile.current) inputFile.current.value = "";
     reset(
       {
         nameProduct: "",
-        amount: "",
+        amount: 0,
         descriptionProduct: "",
         image: null,
       },
@@ -115,17 +135,16 @@ const FormBusinessmen = (props) => {
     );
   };
 
-  const uploadImage = (data, next) => {
-    let file = data.image[0];
-    let nameI: string = `pictureProducts/${userToken}_product_${Math.floor(
+  const uploadImage = (image: File, fnSuccees: (param: img) => void) => {
+    const filePath = import.meta.env.VITE_FIREBASE_PRODUCT_PATH;
+    let pathServer: string = `${filePath}/${userToken}_product_${Math.floor(
       Math.random() * (10000 - 2 + 1) + 2
     )}`;
-    const storageRef = ref(storage, nameI);
-    const task = uploadBytesResumable(storageRef, file);
+    const storageRef = ref(storage, pathServer);
+    const task = uploadBytesResumable(storageRef, image);
     task.on(
       "state_changed",
-      (snapshot) => {
-        const { bytesTransferred, totalBytes } = snapshot;
+      ({ bytesTransferred, totalBytes }) => {
         let porcentage;
         if (bytesTransferred < totalBytes) {
           porcentage = (bytesTransferred / totalBytes) * 100;
@@ -134,54 +153,54 @@ const FormBusinessmen = (props) => {
         }
         setUpladValue(porcentage);
       },
-      (error) => {
-        toast(`Ha ocurrido un error: ${error.message}`, {
-          type: "error",
-        });
-      },
+      (error) => toast.error(`Ha ocurrido un error: ${error.message}`),
       () => {
-        const asy = async () => {
+        (async () => {
           const downloadURL = await getDownloadURL(task.snapshot.ref);
           setUrl(downloadURL);
           toast.success("Se ha subido la imagen correctamente");
-          next({ nameI, downloadURL });
-        };
-        asy();
+          fnSuccees({ pathServer, downloadURL });
+        })();
       }
     );
   };
-  const update = async (data, img) => {
-    let upKing = {
+
+  const update = async (data: FormData, imgData?: img) => {
+    let newProduct: UpdateProduct = {
       amount: data.amount,
       descriptionProduct: data.descriptionProduct,
       nameProduct: data.nameProduct,
       updateOn: new Date(),
     };
-    if (checked) {
-      const { nameI, downloadURL } = img;
-      upKing = { ...upKing, nameI, image: downloadURL };
-    }
-    await updateDoc(doc(db, "products", props.currentId.id), upKing);
-    toast("Producto actualizado exitosamente", { type: "info" });
+    if (checked && imgData)
+      newProduct = {
+        ...newProduct,
+        pathServer: imgData.pathServer,
+        image: imgData.downloadURL,
+      };
+
+    await updateDoc(doc(db, "products", id), newProduct);
+    toast.info("Producto actualizado exitosamente");
     resetForm();
-    props.ok();
+    success();
   };
-  const onSubmit = async (data) => {
+
+  const onSubmit = async (data: FormData) => {
     setLoading(true);
-    if (props.currentId.id !== "") {
+    if (id !== "") {
       if (checked) {
         if (data.image) {
-          var desertRef = ref(storage, props.currentId.name);
           try {
-            await deleteObject(desertRef);
-            uploadImage(data, (d) => update(data, d));
+            const desertImageRef = ref(storage, pathServer);
+            await deleteObject(desertImageRef);
+            uploadImage(data.image[0], (imgData: img) => update(data, imgData));
           } catch (e) {
-            toast("hubo un error al actualizar", { type: "error" });
+            toast.error("hubo un error al actualizar");
             console.log(e);
             setLoading(false);
           }
         } else {
-          toast("Seleciona una imagen", { type: "error" });
+          toast.error("Seleciona una imagen");
           setLoading(false);
         }
       } else {
@@ -189,21 +208,23 @@ const FormBusinessmen = (props) => {
       }
     } else {
       if (data.image) {
-        uploadImage(data, async ({ nameI, downloadURL }) => {
-          const king = {
+        const fnNewProduct = async ({ pathServer, downloadURL }: img) => {
+          const newProduct: Product = {
             amount: data.amount,
             descriptionProduct: data.descriptionProduct,
             nameProduct: data.nameProduct,
-            creator: userToken,
+            createBy: userToken,
             image: downloadURL,
-            nameI,
+            pathServer,
             createdOn: new Date(),
             updateOn: new Date(),
           };
-          await addDoc(collection(db, "products"), king);
+          console.log(newProduct);
+          await addDoc(collection(db, "products"), newProduct);
           toast.success("Producto guardado exitosamente");
           resetForm();
-        });
+        };
+        uploadImage(data.image[0], fnNewProduct);
       } else {
         toast("Seleciona una imagen", { type: "error" });
         setLoading(false);
@@ -211,12 +232,13 @@ const FormBusinessmen = (props) => {
     }
   };
 
-  const imgChange = (event) => {
-    const imageFile = event.target.files[0];
+  const imgChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+    const imageFile: File | null = target.files ? target.files[0] : null;
     const imageUrl = URL.createObjectURL(imageFile);
     setUrl(imageUrl);
-    setValue("image", event.target.files, true);
+    setValue("image", target.files);
   };
+
   return (
     <Box className={classes.center}>
       <Card elevation={5} className={classes.cardInputs}>
@@ -225,10 +247,10 @@ const FormBusinessmen = (props) => {
           subheader={`asociado al negocio "${business}"`}
         />
         <Box className="preview">
-          {url !== null ? (
+          {url !== "" ? (
             <Fade in={true} timeout={2000}>
               <Box>
-                <img src={url} alt="Imagen del producto" />{" "}
+                <img src={url} alt="Imagen del producto" />
                 <Box display="flex" alignItems="center">
                   <Box width="100%" mr={1}>
                     <LinearProgress variant="determinate" value={uploadValue} />
@@ -315,7 +337,7 @@ const FormBusinessmen = (props) => {
                 />
               </Grid>
 
-              {props.currentId.id !== "" ? (
+              {id !== "" ? (
                 <div>
                   <FormControlLabel
                     className={classes.inputs}
@@ -382,7 +404,7 @@ const FormBusinessmen = (props) => {
               <Grid item xs={12}>
                 <Box mt={2}>
                   <Grid container spacing={2}>
-                    <Grid item xs={props.currentId.id !== "" ? 6 : 12}>
+                    <Grid item xs={id !== "" ? 6 : 12}>
                       <Button
                         type="submit"
                         disabled={loading}
@@ -390,10 +412,10 @@ const FormBusinessmen = (props) => {
                         className={classes.inputs}
                         color="secondary"
                       >
-                        {props.currentId.id !== "" ? "Acutualizar" : "Guardar"}
+                        {id !== "" ? "Acutualizar" : "Guardar"}
                       </Button>
                     </Grid>
-                    {props.currentId.id !== "" ? (
+                    {id !== "" ? (
                       <Grid item xs={6}>
                         <Button
                           type="submit"
@@ -402,7 +424,7 @@ const FormBusinessmen = (props) => {
                           color="primary"
                           className={classes.inputs}
                           onClick={() => {
-                            props.ok();
+                            success();
                             resetForm();
                           }}
                         >
@@ -423,6 +445,7 @@ const FormBusinessmen = (props) => {
         </CardContent>
       </Card>
       <input
+        ref={inputFile}
         type="file"
         name="image"
         onChange={(e) => imgChange(e)}

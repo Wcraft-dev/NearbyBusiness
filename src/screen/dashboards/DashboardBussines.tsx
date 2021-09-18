@@ -19,41 +19,67 @@ import { Create, Close } from "@material-ui/icons/";
 import FormBusinessmen from "../../component/FormBusinessmen";
 import AuthContext from "../../context/auth/AuthContext";
 import TimeAgo from "react-timeago";
-import espanishStrings from "react-timeago/lib/language-strings/es";
+import spanishStrings from "react-timeago/lib/language-strings/es";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 import { JackInTheBox } from "react-awesome-reveal";
-import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  QuerySnapshot,
+  where,
+  query,
+  Query,
+} from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
+import {
+  productsConverter,
+  CurrentProduct,
+  Product,
+} from "../../@types/Products";
 
+const formatter = buildFormatter(spanishStrings);
 function Index() {
-  const [products, setProducts] = useState([]);
-  const [currentId, setCurrentId] = useState({ id: "", name: "" });
-  const formatter = buildFormatter(espanishStrings);
-  const { userToken } = useContext(AuthContext);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [currentId, setCurrentId] = useState<CurrentProduct>({
+    id: "",
+    pathServer: "",
+  });
+  const {
+    UserData: { userToken },
+  } = useContext(AuthContext);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), (querySnapshot) => {
-      const docs = [];
+    const productsRef = collection(db, "products").withConverter(
+      productsConverter
+    );
+    const q: Query<Product> = query<Product>(
+      productsRef,
+      where("createBy", "==", userToken)
+    );
+
+    const unsub = onSnapshot(q, (querySnapshot: QuerySnapshot<Product>) => {
+      const docs: Product[] = [];
       querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        if (d.creator === userToken) {
-          docs.push({ ...d, id: doc.id });
-        }
+        const d: Product = doc.data();
+        docs.push({
+          ...d,
+          id: doc.id,
+        });
       });
       setProducts(docs);
     });
-    return () => {
-      unsub();
-    };
+    return () => unsub();
   }, []);
 
-  const deleteProduct = async (id, nameI) => {
+  const deleteProduct = async (id: string, pathServer: string) => {
     if (window.confirm("Estas seguro de borrar este produto")) {
-      let desertRef = ref(storage, nameI);
+      let desertImageRef = ref(storage, pathServer);
       try {
-        await deleteObject(desertRef);
+        await deleteObject(desertImageRef);
         await deleteDoc(doc(db, "products", id));
-        toast("Producto borrado exitosamente", { type: "warning" });
+        toast.success("Producto borrado exitosamente");
       } catch (e) {
         toast.error("Hubo un error al borrar");
         console.log(e);
@@ -67,8 +93,8 @@ function Index() {
         <Box mb={4}>
           <JackInTheBox>
             <FormBusinessmen
-              currentId={currentId}
-              ok={() => setCurrentId({ id: "", name: "" })}
+              productSelected={currentId}
+              success={(): void => setCurrentId({ id: "", pathServer: "" })}
             />
           </JackInTheBox>
         </Box>
@@ -83,16 +109,15 @@ function Index() {
                       subheader={
                         <div>
                           {"se actualizo "}
-                          <TimeAgo
-                            date={obj.updateOn.toDate()}
-                            formatter={formatter}
-                          />
+                          <TimeAgo date={obj.updateOn} formatter={formatter} />
                         </div>
                       }
                       action={
                         <IconButton
                           aria-label="delete"
-                          onClick={() => deleteProduct(obj.id, obj.nameI)}
+                          onClick={() =>
+                            deleteProduct(obj.id ? obj.id : "", obj.pathServer)
+                          }
                         >
                           <Close />
                         </IconButton>
@@ -119,7 +144,7 @@ function Index() {
                           <Typography variant="caption">
                             {"Se subio "}
                             <TimeAgo
-                              date={obj.createdOn.toDate()}
+                              date={obj.createdOn}
                               formatter={formatter}
                             />
                           </Typography>
@@ -137,7 +162,10 @@ function Index() {
                         aria-label="edit"
                         size="small"
                         onClick={() =>
-                          setCurrentId({ id: obj.id, name: obj.nameI })
+                          setCurrentId({
+                            id: obj.id ? obj.id : "",
+                            pathServer: obj.pathServer,
+                          })
                         }
                       >
                         <Create />

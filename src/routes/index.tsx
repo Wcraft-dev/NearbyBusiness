@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { FC, useContext } from "react";
 import {
   BrowserRouter as Router,
   Switch,
@@ -11,71 +11,77 @@ import AuthContext from "../context/auth/AuthContext";
 import NotFound from "../screen/NotFound";
 import Header from "../component/Header";
 import routes from "./routes";
+import { WithChildren } from "../@types/";
+import { routeType } from "../@types/Auth";
 
 export default function Routes() {
-  const { userToken, homePath } = useContext(AuthContext);
+  const {
+    UserData: { userToken, homePath },
+  } = useContext(AuthContext);
   return (
     <Router>
       <Header>
-        {userToken !== null ? (
-          <Button
-            color="inherit"
-            component={NavLink}
-            exact
-            to={homePath}
-            activeStyle={{
-              fontWeight: "bold",
-              color: "red",
-            }}
-          >
-            Inicio
-          </Button>
-        ) : (
-          ""
-        )}
-        {routes.map((route, i) => {
-          return (
-            <div key={i}>
-              {route.show ? (
-                userToken === null ? (
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    exact
-                    to={route.path}
-                    activeStyle={{
-                      fontWeight: "bold",
-                      color: "red",
-                    }}
-                  >
-                    {route.displayName}
-                  </Button>
+        <>
+          {userToken !== "" && homePath !== null ? (
+            <Button
+              color="inherit"
+              component={NavLink}
+              exact
+              to={homePath}
+              activeStyle={{
+                fontWeight: "bold",
+                color: "red",
+              }}
+            >
+              Inicio
+            </Button>
+          ) : (
+            <></>
+          )}
+          {routes.map((route, i) => {
+            return (
+              <div key={i}>
+                {route.show ? (
+                  userToken === "" ? (
+                    <Button
+                      color="inherit"
+                      component={NavLink}
+                      exact
+                      to={route.path}
+                      activeStyle={{
+                        fontWeight: "bold",
+                        color: "red",
+                      }}
+                    >
+                      {route.displayName}
+                    </Button>
+                  ) : (
+                    <></>
+                  )
+                ) : userToken !== "" ? (
+                  !route.shadow ? (
+                    <Button
+                      color="inherit"
+                      component={NavLink}
+                      exact
+                      to={route.path}
+                      activeStyle={{
+                        fontWeight: "bold",
+                        color: "red",
+                      }}
+                    >
+                      {route.displayName}
+                    </Button>
+                  ) : (
+                    <></>
+                  )
                 ) : (
-                  ""
-                )
-              ) : userToken !== null ? (
-                !route.shadow ? (
-                  <Button
-                    color="inherit"
-                    component={NavLink}
-                    exact
-                    to={route.path}
-                    activeStyle={{
-                      fontWeight: "bold",
-                      color: "red",
-                    }}
-                  >
-                    {route.displayName}
-                  </Button>
-                ) : (
-                  ""
-                )
-              ) : (
-                ""
-              )}
-            </div>
-          );
-        })}
+                  <></>
+                )}
+              </div>
+            );
+          })}
+        </>
       </Header>
       <Switch>
         {routes.map((route, i) => {
@@ -88,16 +94,21 @@ export default function Routes() {
     </Router>
   );
 }
-
-function PrivateRoute({ children, route, ...rest }) {
+type PrivateRouteType = { route: routeType; path: string; exact: boolean };
+const PrivateRoute = ({
+  children,
+  route,
+  ...rest
+}: WithChildren<PrivateRouteType>) => {
   const { accessRoute } = useContext(AuthContext);
   const valid = accessRoute(route);
+  const Component = route.component;
 
   return (
     <div>
       {valid && (
         <Route {...rest}>
-          <route.component />
+          <Component />
         </Route>
       )}
       {!valid && (
@@ -116,4 +127,4 @@ function PrivateRoute({ children, route, ...rest }) {
       )}
     </div>
   );
-}
+};

@@ -1,10 +1,11 @@
+import React from "react";
 import DashboardBussines from "../screen/dashboards/DashboardBussines";
 import DashboardNormal from "../screen/dashboards/DashboardNormal";
 import Home from "../screen/Home";
 import auth from "./auth";
-import { AuthRoles } from "../context/auth/AuthContext";
+import { AuthRole, routesType } from "../@types/Auth";
 
-const routes = [
+const routes: routesType = [
   {
     path: "/",
     displayName: "Inicio",
@@ -17,14 +18,14 @@ const routes = [
     component: DashboardBussines,
     show: false,
     shadow: true,
-    permission: AuthRoles.EMPRESARIO,
+    permission: AuthRole.EMPRESARIO,
   },
   {
     path: "/productos",
     component: DashboardNormal,
     show: false,
     shadow: true,
-    permission: AuthRoles.NORMAL,
+    permission: AuthRole.NORMAL,
   },
 ];
 export default routes;

@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import AuthContext, { AuthRoles } from "../../context/auth/AuthContext";
+import AuthContext from "../../context/auth/AuthContext";
 import {
   Grid,
   FormControl,
@@ -23,6 +23,7 @@ import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import * as yup from "yup";
 import { Bounce, Roll } from "react-awesome-reveal";
+import { AuthDataSign, AuthRole } from "../../@types/Auth";
 
 const schema = yup.object().shape({
   firstName: yup.string().required().min(3).max(20),
@@ -149,7 +150,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const watchType = watch("type");
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: AuthDataSign) => {
     const res = await signUp(data);
     if (res) {
       history.push("/login");
@@ -363,7 +364,7 @@ export default function SignUp() {
                     />
                   </Grid>
                 </Grid>
-                {watchType === AuthRoles.EMPRESARIO ? (
+                {watchType === AuthRole.EMPRESARIO ? (
                   <Grid item className={classes.inputs}>
                     <Controller
                       name="business"
@@ -396,7 +397,7 @@ export default function SignUp() {
                     <Controller
                       name="type"
                       control={control}
-                      defaultValue={AuthRoles.NORMAL}
+                      defaultValue={AuthRole.NORMAL}
                       render={({ field: { onChange, value } }) => (
                         <Select
                           value={value}
@@ -407,10 +408,10 @@ export default function SignUp() {
                           <MenuItem value="">
                             <em>None</em>
                           </MenuItem>
-                          <MenuItem value={AuthRoles.EMPRESARIO}>
+                          <MenuItem value={AuthRole.EMPRESARIO}>
                             Microempresa
                           </MenuItem>
-                          <MenuItem value={AuthRoles.NORMAL}>Normal</MenuItem>
+                          <MenuItem value={AuthRole.NORMAL}>Normal</MenuItem>
                         </Select>
                       )}
                     />

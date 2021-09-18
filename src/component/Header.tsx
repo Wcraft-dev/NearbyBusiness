@@ -14,6 +14,7 @@ import {
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import AuthContext from "../context/auth/AuthContext";
+import { WithChildren } from "../@types/";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,26 +41,29 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
 }));
-
-const HideOnScroll = (props) => {
-  const { children } = props;
+type HiddenProps = { position: "static" | "fixed" | null };
+const HideOnScroll = ({ children, ...props }: WithChildren<HiddenProps>) => {
   const trigger = useScrollTrigger();
-
   return (
     <div>
       {props.position === "static" ? (
         children
       ) : (
-        <Slide appear={false} direction="down" in={trigger}>
-          {children}
-        </Slide>
+        <Slide
+          appear={false}
+          direction="down"
+          in={trigger}
+          children={children}
+        />
       )}
     </div>
   );
 };
-export default function Header(props) {
+export default function Header({ children, ...props }: WithChildren) {
   const classes = useStyles();
-  const { userToken, homePath } = useContext(AuthContext);
+  const {
+    UserData: { userToken, homePath },
+  } = useContext(AuthContext);
   const { pathname } = useLocation();
   const [drawer, setDrawerOpen] = React.useState(false);
 
@@ -101,7 +105,7 @@ export default function Header(props) {
               <Typography variant="h6" className={classes.title}>
                 Nerby Business
               </Typography>
-              <Box className={classes.responsive}>{props.children}</Box>
+              <Box className={classes.responsive}>{children}</Box>
             </Toolbar>
           </AppBar>
         </HideOnScroll>
@@ -111,7 +115,7 @@ export default function Header(props) {
         open={drawer}
         onClose={() => setDrawerOpen(false)}
       >
-        <MenuItem style={{ display: "block" }}>{props.children}</MenuItem>
+        <MenuItem style={{ display: "block" }}>{children}</MenuItem>
       </Drawer>
     </div>
   );

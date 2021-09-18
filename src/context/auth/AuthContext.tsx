@@ -1,33 +1,28 @@
 import { createContext } from "react";
-import { AUTH, SIGN_OUT } from "../types";
+import { AuthContextType, Action, State, ActionKind } from "../../@types/Auth";
 
-const AuthContext = createContext("");
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export const AuthReducer = (state, { payload, type }) => {
+export const AuthReducer = (state: State, { payload, type }: Action): State => {
   switch (type) {
-    case AUTH:
+    case ActionKind.AUTH:
       return {
         ...state,
-        userToken: payload.token,
-        role: payload.type,
+        userToken: payload.userToken,
+        role: payload.role,
         homePath: payload.homePath,
         business: payload.business,
       };
-    case SIGN_OUT:
+    case ActionKind.SIGN_OUT:
       return {
         userToken: payload.userToken,
         role: payload.role,
         homePath: payload.homePath,
+        business: payload.business,
       };
     default:
       return state;
   }
 };
 
-export const AuthRoles = {
-  NORMAL: "NORMAL",
-  NORMAL_PATH: "/productos",
-  EMPRESARIO: "EMPRESARIO",
-  EMPRESARIO_PATH: "/dashboard",
-};
 export default AuthContext;

@@ -1,28 +1,44 @@
 import React, { useReducer, useEffect, FC } from "react";
-import AuthContext, { AuthReducer, AuthRoles } from "./AuthContext";
+import AuthContext, { AuthReducer } from "./AuthContext";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   signInWithPopup,
   onAuthStateChanged,
+  UserCredential,
+  User,
 } from "firebase/auth";
 import { GoogleAuthProvider } from "firebase/auth";
 import { auth, db } from "../../firebase";
-import { doc, setDoc, collection, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { AUTH, SIGN_OUT } from "../types";
+import {
+  AuthDataSign,
+  IFirebaseError,
+  routeType,
+  AuthRole,
+  State,
+  AuthAction,
+  SignOutAction,
+  ReducerAuth,
+  Action,
+  AuthHomePath,
+} from "../../@types/Auth";
 
 const AuthState: FC = (props) => {
-  const initialState = {
-    userToken: null,
+  const initialState: State = {
+    userToken: "",
     role: null,
     homePath: null,
-    business: null,
+    business: "",
   };
-  const [state, dispatch] = useReducer(AuthReducer, initialState);
+  const [state, dispatch] = useReducer<ReducerAuth<State, Action>>(
+    AuthReducer,
+    initialState
+  );
 
-  const validErrorsFB = (e) => {
+  const validErrorsFB = (e: IFirebaseError) => {
     switch (e.code) {
       case "auth/email-already-in-use":
         toast("Correo ya usado", { type: "error" });
@@ -41,7 +57,7 @@ const AuthState: FC = (props) => {
       case "auth/wrong-password":
         toast("Coreo o contraseña equivocados", { type: "error" });
         break;
-      case "auth/user-disable":
+      case "auth/user-disabled":
         toast("Se desactivado tu cuenta, consulta servicio al cliente", {
           type: "error",
         });
@@ -57,42 +73,34 @@ const AuthState: FC = (props) => {
     }
   };
 
-  const signIn = async (data) => {
+  const signIn = async (data: AuthDataSign) => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
-      toast("Ingresaste con extio");
+      toast.success("Ingresaste con extio");
       return true;
-    } catch (e) {
+    } catch (e: any) {
       validErrorsFB(e);
+      return false;
     }
   };
 
   const googleSingIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const res = await signInWithPopup(auth, provider);
-      if (res.credential) {
-        await setDoc(doc(db, "users", res.user.uid), {
-          name: res.user.displayName,
-          email: res.user.email,
-          photo: res.user.photoURL,
-          type: AuthRoles.NORMAL,
-          firstLogin: true,
-        });
-      }
-      toast("Ingresaste con extio");
-    } catch (e) {
+      await signInWithPopup(auth, provider);
+      toast.success("Ingresaste con exito");
+    } catch (e: any) {
       validErrorsFB(e);
     }
   };
-  const signUp = async (data) => {
+  const signUp = async (data: AuthDataSign) => {
     try {
-      const res = await createUserWithEmailAndPassword(
+      const { user } = await createUserWithEmailAndPassword(
         auth,
         data.email,
         data.password
       );
-      await setDoc(doc(db, "users", res.user.uid), {
+      await setDoc(doc(db, "users", user.uid), {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
@@ -102,19 +110,20 @@ const AuthState: FC = (props) => {
       });
       toast("Registrado con exito");
       return true;
-    } catch (e) {
+    } catch (e: any) {
       validErrorsFB(e);
+      return false;
     }
   };
   const fnsignOut = async () => {
     try {
-      dispatch({ type: SIGN_OUT, payload: initialState });
+      dispatch({ ...SignOutAction, payload: initialState });
       signOut(auth);
-    } catch (e) {
+    } catch (e: any) {
       validErrorsFB(e);
     }
   };
-  const accessRoute = (route) => {
+  const accessRoute = (route: routeType) => {
     if (!route.permission) return true;
     if (route.permission === state.role) {
       return true;
@@ -122,41 +131,58 @@ const AuthState: FC = (props) => {
       return false;
     }
   };
-  const dataUser = async (id) => {
+  const dataUser = async (id: string, user?: User) => {
     const res = await getDoc(doc(db, "users", id));
     const data = res.data();
     if (res.exists()) {
       let homePath = null;
-      if (data?.type === AuthRoles.EMPRESARIO) {
-        homePath = AuthRoles.EMPRESARIO_PATH;
-      } else if (data?.type === AuthRoles.NORMAL) {
-        homePath = AuthRoles.NORMAL_PATH;
+      if (data?.type === AuthRole.EMPRESARIO) {
+        homePath = AuthHomePath.EMPRESARIO_PATH;
+      } else if (data?.type === AuthRole.NORMAL) {
+        homePath = AuthHomePath.NORMAL_PATH;
       }
-      const payload = { ...res.data(), token: id, homePath };
-      dispatch({ type: AUTH, payload });
+      const payload: State = {
+        ...res.data(),
+        userToken: id,
+        homePath,
+        role: data?.type,
+        business: data?.business,
+      };
+      dispatch({ ...AuthAction, payload });
     } else {
-      toast.error("No se encontro el usuario");
+      if (user) {
+        await setDoc(doc(db, "users", id), {
+          name: user.displayName,
+          email: user.email,
+          photo: user.photoURL,
+          type: AuthRole.NORMAL,
+          firstLogin: true,
+        });
+        dataUser(id);
+      } else {
+        toast.error("No se encontro el usuario");
+      }
     }
   };
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        dataUser(user.uid);
-      }
+      if (user) dataUser(user.uid, user);
     });
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        userToken: state.userToken,
-        role: state.role,
-        homePath: state.homePath,
-        business: state.business,
+        UserData: {
+          userToken: state.userToken,
+          role: state.role,
+          homePath: state.homePath,
+          business: state.business,
+        },
         signIn,
         signUp,
-        fnsignOut,
+        signOut: fnsignOut,
         googleSingIn,
         accessRoute,
       }}

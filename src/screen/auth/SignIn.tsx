@@ -20,6 +20,7 @@ import donut from "../../assets/donut.png";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Flip, Fade } from "react-awesome-reveal";
+import { AuthDataSign } from "../../@types/Auth";
 
 const schema = yup.object().shape({
   email: yup
@@ -116,7 +117,7 @@ function SignIn() {
 
   let history = useHistory();
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: AuthDataSign) => {
     const res = await signIn(data);
     if (res) {
       reset(
@@ -135,10 +136,14 @@ function SignIn() {
       );
     }
   };
-  const { signIn, userToken, homePath, googleSingIn } = useContext(AuthContext);
+  const {
+    signIn,
+    UserData: { userToken, homePath },
+    googleSingIn,
+  } = useContext(AuthContext);
 
   useEffect(() => {
-    if (userToken !== null) {
+    if (userToken !== null && homePath !== null) {
       history.push(homePath);
     }
   }, [userToken, homePath]);

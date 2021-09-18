@@ -38,8 +38,10 @@ import {
   getDoc,
   OrderByDirection,
   onSnapshot,
+  Query,
 } from "firebase/firestore";
 import { Zoom } from "react-awesome-reveal";
+import { Product, productsConverter } from "../../@types/Products";
 
 const useStyles = makeStyles((theme) => ({
   search: {
@@ -75,16 +77,17 @@ const useStyles = makeStyles((theme) => ({
     transform: "rotate(180deg)",
   },
 }));
-export default function DashboardNormal() {
-  const [products, setProducts] = useState([]);
-  const [productsFB, setProductsFB] = useState([]);
-  const [filter, setFilter] = useState<OrderByDirection>("desc");
-  const [open, setOpen] = useState(false);
-  const [whoView, setWhoView] = useState<any>({});
-  const [expanded, setExpanded] = useState(false);
 
-  const [error, setError] = useState(null);
-  const formatter = buildFormatter(espanishStrings);
+const formatter = buildFormatter(espanishStrings);
+export default function DashboardNormal() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsFB, setProductsFB] = useState<Product[]>([]);
+  const [filter, setFilter] = useState<OrderByDirection>("desc");
+  const [open, setOpen] = useState<boolean>(false);
+  const [whoView, setWhoView] = useState<any>({});
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  const [error, setError] = useState<string>("");
 
   const classes = useStyles();
 
@@ -97,9 +100,9 @@ export default function DashboardNormal() {
     handleClose();
   };
 
-  const user = async (data) => {
+  const user = async (data: Product) => {
     try {
-      const creator = await getDoc(doc(db, "users", data.creator));
+      const creator = await getDoc(doc(db, "users", data.createBy));
       const d = creator.data();
       const state = {
         creator: {
@@ -118,9 +121,12 @@ export default function DashboardNormal() {
   };
   useEffect(() => {
     let first = false;
-    const q = query(collection(db, "products"), orderBy("createdOn", filter));
+    const q: Query<Product> = query<Product>(
+      collection(db, "products").withConverter(productsConverter),
+      orderBy("createdOn", filter)
+    );
     const unsub = onSnapshot(q, (querySnapshot) => {
-      const docs = [];
+      const docs: Product[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         docs.push({
@@ -149,32 +155,34 @@ export default function DashboardNormal() {
     }
   }, [products]);
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState<any>(null);
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const search = (input) => {
+  const search = ({
+    target: { value },
+  }: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const newData = [];
     if (products.length > 0) {
       for (let i = 0; i < products.length; i++) {
         let val = products[i].nameProduct;
-        let posicion = val.indexOf(input);
+        let posicion = val.indexOf(value);
         if (posicion !== -1) {
           newData.push(products[i]);
-          setError(null);
+          setError("");
         } else {
           setError("No hay resultados");
         }
         setProducts(newData);
       }
     }
-    if (input === "") {
+    if (value === "") {
       setProducts(productsFB);
     }
   };
-  const modalData = async (data) => {
+  const modalData = async (data: Product) => {
     await user(data);
     setOpen(true);
   };
@@ -202,8 +210,8 @@ export default function DashboardNormal() {
                       </InputAdornment>
                     ),
                   }}
-                  onKeyUp={(text) => search(text.target.value)}
-                  helperText={error !== null ? error : ""}
+                  onChange={search}
+                  helperText={error !== "" ? error : ""}
                 />
               </Grid>
               <Grid item>
@@ -270,7 +278,7 @@ export default function DashboardNormal() {
                             {"Subido "}
                             <Typography variant="caption">
                               <TimeAgo
-                                date={obj.createdOn.toDate()}
+                                date={obj.createdOn}
                                 formatter={formatter}
                               />
                             </Typography>
@@ -369,9 +377,7 @@ export default function DashboardNormal() {
                       {"Subido "}
                       <TimeAgo
                         date={
-                          whoView.obj?.createdOn
-                            ? whoView.obj?.createdOn.toDate()
-                            : ""
+                          whoView.obj?.createdOn ? whoView.obj?.createdOn : ""
                         }
                         formatter={formatter}
                       />

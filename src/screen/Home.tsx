@@ -93,7 +93,7 @@ const datosTemp = [
     heart: 10,
   },
 ];
-export default function Home({ routes }) {
+export default function Home() {
   const classes = useStyles();
 
   return (
@@ -125,8 +125,8 @@ export default function Home({ routes }) {
         </Flip>
       </div>
 
-      <Container maxwidth="md" className={classes.spacing}>
-        <Bounce left duration={2000}>
+      <Container component="div" maxWidth="md" className={classes.spacing}>
+        <Bounce duration={2000} direction="left">
           <Typography variant="h4">
             <Box
               textAlign="center"
@@ -225,7 +225,7 @@ export default function Home({ routes }) {
       </Container>
 
       <Container maxWidth="md" className={classes.spacing}>
-        <Fade bottom duration={2000}>
+        <Fade direction="bottom-right" duration={2000}>
           <Typography variant="h4">
             <Box
               textAlign="center"
@@ -367,7 +367,7 @@ export default function Home({ routes }) {
           <Container maxWidth="md">
             <Grid container spacing={3}>
               <Grid item md={7}>
-                <Fade bottom duration={2000}>
+                <Fade direction="bottom-right" duration={2000}>
                   <Typography variant="h4">
                     <Box fontWeight="fontWeightBold" fontSize="h4.fontSize">
                       Promocion
@@ -561,11 +561,7 @@ export default function Home({ routes }) {
                       </Typography>
                       <Box p={5} pt={3} pb={0}>
                         <Grid container direction="column">
-                          <form
-                            className={classes.form}
-                            noValidate
-                            autoComplete="off"
-                          >
+                          <form noValidate autoComplete="off">
                             <Grid item>
                               <TextField
                                 variant="outlined"
@@ -582,7 +578,6 @@ export default function Home({ routes }) {
                                 margin="normal"
                                 type="text"
                                 variant="outlined"
-                                className={classes.inputNumber}
                                 InputProps={{
                                   inputProps: { min: 0 },
                                   startAdornment: (
@@ -628,7 +623,7 @@ export default function Home({ routes }) {
       </Container>
 
       <Container maxWidth="md" className={classes.spacing}>
-        <Bounce right duration={2000}>
+        <Bounce direction="right" duration={2000}>
           <Typography variant="h4">
             <Box
               textAlign="center"

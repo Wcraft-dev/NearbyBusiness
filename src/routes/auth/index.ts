@@ -1,8 +1,9 @@
 import SignIn from "../../screen/auth/SignIn";
 import SignUp from "../../screen/auth/SignUp";
 import SignOut from "../../screen/auth/SignOut";
+import { routesType } from "../../@types/Auth";
 
-const auth = [
+const auth: routesType = [
   {
     path: "/login",
     displayName: "Iniciar Sesion",
