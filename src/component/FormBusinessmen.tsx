@@ -185,7 +185,7 @@ const FormBusinessmen = ({
     success();
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormData | any) => {
     setLoading(true);
     if (id !== "") {
       if (checked) {
@@ -233,7 +233,7 @@ const FormBusinessmen = ({
   };
 
   const imgChange = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    const imageFile: File | null = target.files ? target.files[0] : null;
+    const imageFile: any = target.files ? target.files[0] : null;
     const imageUrl = URL.createObjectURL(imageFile);
     setUrl(imageUrl);
     setValue("image", target.files);

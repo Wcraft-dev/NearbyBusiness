@@ -1,2 +1,3 @@
 # NearbyBusiness
-deploy https://nerby-business.web.app/
+
+deploy  <https://nearbybusiness.jhairparis.com/>

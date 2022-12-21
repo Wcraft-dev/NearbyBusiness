@@ -117,7 +117,7 @@ function SignIn() {
 
   let history = useHistory();
 
-  const onSubmit = async (data: AuthDataSign) => {
+  const onSubmit = async (data: AuthDataSign | any) => {
     const res = await signIn(data);
     if (res) {
       reset(
@@ -163,10 +163,9 @@ function SignIn() {
               <Divider className={classes.dividerLeft} />
               <Box mt={5}>
                 <Typography variant="body1" component="p" align="justify">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos
-                  blanditiis tenetur unde suscipit, quam beatae rerum inventore
-                  consectetur, neque doloribus, cupiditate numquam dignissimos
-                  laborum fugiat deleniti? Eum quasi quidem quibusdam
+                  Si quieres probar nuestra aplicación, solo tienes que hacer
+                  clic en el botón "Inicio de sesion con Google" y completar el
+                  formulario de registro. Es fácil y rápido.
                 </Typography>
               </Box>
               <Box mt={5}>

@@ -150,7 +150,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const watchType = watch("type");
 
-  const onSubmit = async (data: AuthDataSign) => {
+  const onSubmit = async (data: AuthDataSign | any) => {
     const res = await signUp(data);
     if (res) {
       history.push("/login");
@@ -190,10 +190,15 @@ export default function SignUp() {
               <Divider className={classes.dividerLeft} />
               <Box mt={5}>
                 <Typography variant="body1" component="p" align="justify">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos
-                  blanditiis tenetur unde suscipit, quam beatae rerum inventore
-                  consectetur, neque doloribus, cupiditate numquam dignissimos
-                  laborum fugiat deleniti? Eum quasi quidem quibusdam
+                  Are you tired of manually tracking and organizing your
+                  products? Our fullstack application is here to help! With a
+                  user-friendly interface and powerful features like filtering
+                  and search, you'll be able to manage your products efficiently
+                  and effectively. Plus, our secure authentication system
+                  ensures that your data is kept safe and only accessible to
+                  authorized users. Don't waste any more time on tedious product
+                  management tasks - register for our application today and
+                  start streamlining your workflow!
                 </Typography>
               </Box>
               <Box mt={5}>
