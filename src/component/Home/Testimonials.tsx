@@ -68,7 +68,7 @@ const Testimonials = () => {
                   component="img"
                   alt="Human"
                   height="240"
-                  image="https://thispersondoesnotexist.com/image"
+                  image="https://thispersondoesnotexist.com"
                   title="Human"
                 />
                 <CardContent>
@@ -132,7 +132,7 @@ const Testimonials = () => {
                   component="img"
                   alt="Human"
                   height="240"
-                  image="https://thispersondoesnotexist.com/image"
+                  image="https://thispersondoesnotexist.com"
                   title="Human"
                 />
                 <CardContent>
@@ -198,7 +198,7 @@ const Testimonials = () => {
                   component="img"
                   alt="Human"
                   height="240"
-                  image="https://thispersondoesnotexist.com/image"
+                  image="https://thispersondoesnotexist.com"
                   title="Human"
                 />
                 <CardContent>

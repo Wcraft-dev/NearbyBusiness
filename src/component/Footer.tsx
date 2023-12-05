@@ -157,7 +157,7 @@ const Footer = () => {
                       <IconButton
                         color="secondary"
                         size="medium"
-                        href="https://github.com/IllustriousLoop/"
+                        href="https://github.com/jhairparis/"
                       >
                         <GitHub />
                       </IconButton>
@@ -187,7 +187,7 @@ const Footer = () => {
                   {"Copyright  "}
                   <CopyrightIcon fontSize="small" />
                   <Link color="inherit" href="https://jhairparis.com/">
-                    {"  IllustriousLoop"}
+                    {"  Jhair Paris"}
                   </Link>
                   {` ${new Date().getFullYear()}`}
                 </Typography>
